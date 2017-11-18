@@ -1,0 +1,305 @@
+---
+title: "US Dept State China AQI"
+author: "madlogos"
+date: "2017-5-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 美领馆AQI
+
+下载一大堆csv
+
+```{r us aqi}
+library(readr)
+library(dplyr)
+library(data.table)
+csv.files <- list.files("~/下载/USDeptStateChinaAQI", full.names=TRUE)
+lst.pm25us <- lapply(csv.files, function(csv) {
+    read_csv(csv, skip=3, col_types=c("ccciiiiiccc"))})
+pm25us <- do.call("bind_rows", lst.pm25us)
+pm25us$`Date (LST)` <- as.Date(
+    with(pm25us, paste(Year,Month,Day)), "%Y %m %d")
+pm25us$`Time (LST)` <- strptime(
+    with(pm25us, paste(Year,Month,Day,Hour)), "%Y %m %d %H")
+pm25us$Value[pm25us$Value < 0] <- NA
+pm25us.d <- dcast(pm25us, Site+`Date (LST)`~., mean, value.var="Value", na.rm=TRUE)
+```
+
+
+# 国家环保总站数据
+
+## tianqihoubao
+
+构造函数，获取所有网址。
+
+```{r udf}
+get_toc <- function(url, css.sel, core.url="http://www.tianqihoubao.com"){
+    library(rvest)
+    library(magrittr)
+    html <- read_html(url, encoding="GB18030")
+    box.li <- html_nodes(html, css.sel) %>% html_nodes("ul")
+    urls <- sapply(html_children(box.li), function(u) {
+        sapply(html_nodes(u, "a"), html_attr, name="href")
+    })
+    urls <- unlist(urls)
+    urls[!grepl("^/", urls)] <- paste0("/", urls[!grepl("^/", urls)])
+    paste0(core.url, urls)
+}
+```
+
+调用并行计算，获取AQI原始数据
+
+```{r get aqi}
+library(parallel)
+cl <- makeCluster(getOption("cl.cores", 2))
+cities <- c("shanghai", "beijing", "guangzhou", "shenyang", "chengdu")
+lst.aqi <- parLapplyLB(
+    cl, paste0("http://www.tianqihoubao.com/aqi/", cities, ".html"), get_toc, 
+    css.sel="div.box.p")
+lst.aqitbl <- parLapplyLB(cl, lst.aqi, function(lst) lapply(lst, function(v) {
+    get_tbl <- function(url){
+        library(rvest)
+        html <- read_html(url, encoding="GB18030")
+        html_table(html, header=TRUE, fill=TRUE)[[1]]
+    }
+    try(get_tbl(v), silent=TRUE)}))
+stopCluster(cl)
+```
+
+合并数据框。
+
+```{r clean aqi}
+tbls <- lapply(lst.aqitbl, function(lst) {
+    o <- do.call("rbind", lst)
+    o$日期 <- as.Date(o$日期)
+    o <- o[!duplicated(o$日期),]
+    return(o[order(o$日期),])
+})
+names(tbls) <- cities
+```
+
+获取天气数据。
+
+```{r get weather}
+cl <- makeCluster(getOption("cl.cores", 2))
+lst.wea <- parLapplyLB(
+    cl, paste0("http://www.tianqihoubao.com/lishi/", cities, ".html"), get_toc, 
+    css.sel="div.box.pcity")
+lst.wea <- lapply(lst.wea, function(v){
+    v <- v[grepl("month", v)]
+    v[grepl("\\.com/[^l]", v)] <- gsub(
+        "http://www\\.tianqihoubao\\.com/(.+$)", "http://www.tianqihoubao\\.com/lishi/\\1",
+        v[grepl("\\.com/[^l]", v)])
+    return(v)
+})
+lst.weatbl <- parLapplyLB(cl, lst.wea, function(lst) lapply(lst, function(v) {
+    get_tbl <- function(url){
+        library(rvest)
+        html <- read_html(url, encoding="GB18030")
+        html_table(html, header=TRUE, fill=TRUE)[[1]]
+    }
+    try(get_tbl(v), silent=TRUE)}))
+stopCluster(cl)
+```
+
+合并数据框。
+
+```{r clean weather}
+wea.tbls <- lapply(lst.weatbl, function(lst) {
+    o <- do.call("rbind", lst)
+    o$日期 <- as.Date(o$日期, format="%Y年%m月%d日")
+    o <- o[!duplicated(o$日期),]
+    return(o[order(o$日期),])
+})
+names(wea.tbls) <- cities
+
+wea.tbls <- lapply(wea.tbls, function(df){
+    library(stringr)
+    df$tmp <- str_split(df$天气状况, "/")
+    df$tmp <- lapply(df$tmp, str_trim)
+    df$天气1 <- sapply(df$tmp, function(v) v[1])
+    df$天气2 <- sapply(df$tmp, function(v) if (length(v)>1) v[2] else NA)
+    
+    df$tmp <- str_split(df$气温, "/")
+    df$tmp <- lapply(df$tmp, str_trim)
+    df$气温1 <- sapply(df$tmp, function(v) v[1])
+    df$气温2 <- sapply(df$tmp, function(v) if (length(v)>1) v[2] else NA)
+    df$气温1 <- as.numeric(str_replace_all(df$气温1, "(-*\\d+)\\D", "\\1"))
+    df$气温2 <- as.numeric(str_replace_all(df$气温2, "(-*\\d+)\\D", "\\1"))
+    
+    df$tmp <- str_split(df$风力风向, "/")
+    df$tmp <- lapply(df$tmp, str_trim)
+    df$风力风向1 <- sapply(df$tmp, function(v) v[1])
+    df$风力风向2 <- sapply(df$tmp, function(v) if (length(v)>1) v[2] else NA)
+    
+    df$tmp <- str_split(df$风力风向1, " ")
+    df$tmp <- lapply(df$tmp, str_trim)
+    df$风向1 <- sapply(df$tmp, function(v) v[1])
+    df$风力1 <- sapply(df$tmp, function(v) if (length(v)>1) v[2] else NA)
+    two.num <- grepl("^(\\d+)\\D+(\\d+)\\D+$", df$风力1)
+    df$风力1L <- df$风力1U <- NA
+    df$风力1L[two.num] <- as.numeric(
+        gsub("^(\\d+)\\D+(\\d+)\\D+$", "\\1", df$风力1[two.num]))
+    df$风力1U[two.num] <- as.numeric(
+        gsub("^(\\d+)\\D+(\\d+)\\D+$", "\\2", df$风力1[two.num]))
+    one.num <- grepl("^\\D*?(\\d+)\\D+$", df$风力1)
+    df$风力1L[one.num] <- df$风力1U[one.num] <- as.numeric(
+        gsub("^\\D*?(\\d+)\\D+$", "\\1", df$风力1[one.num]))
+    df$风力1U[df$风力1=="微风"] <- 3
+    
+    df$tmp <- str_split(df$风力风向2, " ")
+    df$tmp <- lapply(df$tmp, str_trim)
+    df$风向2 <- sapply(df$tmp, function(v) v[1])
+    df$风力2 <- sapply(df$tmp, function(v) if (length(v)>1) v[2] else NA)
+    df$风力2L <- df$风力2U <- NA
+    two.num <- grepl("^(\\d+)\\D+(\\d+)\\D+$", df$风力2)
+    df$风力2L[two.num] <- as.numeric(
+        gsub("^(\\d+)\\D+(\\d+)\\D+$", "\\1", df$风力2[two.num]))
+    df$风力2U[two.num] <- as.numeric(
+        gsub("^(\\d+)\\D+(\\d+)\\D+$", "\\2", df$风力2[two.num]))
+    one.num <- grepl("^\\D*?(\\d+)\\D+$", df$风力2)
+    df$风力2L[one.num] <- df$风力2U[one.num] <- as.numeric(
+        gsub("^\\D*?(\\d+)\\D+$", "\\1", df$风力2[one.num]))
+    df$风力2U[df$风力2=="微风"] <- 3
+    
+    df$tmp <- df$风力风向1 <- df$风力风向2 <- df$风力1 <-  df$风力2 <-  NULL
+    return(df)
+})
+
+dat.tbls <- lapply(1:5, function(i){
+    merge(tbls[[i]], wea.tbls[[i]], by="日期", all.x=TRUE, sort=FALSE)
+})
+names(dat.tbls) <- cities
+```
+
+修改为数据框。
+
+```{r merge dattables}
+library(stringr)
+for (i in cities) dat.tbls[[i]]$City <- str_to_title(i)
+dat.tbls <- do.call("bind_rows", dat.tbls)
+```
+
+# EDA
+
+## 环保局和美领馆数据一致吗
+
+```{r compare prepare}
+dat1 <- dat.tbls[,c("日期", "PM2.5", "City")]
+dat2 <- pm25us.d[,c("Date (LST)", ".", "Site")]
+names(dat1) <- names(dat2) <- c("Date", "PM2.5", "Site")
+dat1$Source <- "环保局"
+dat2$Source <- "美领馆"
+compare.dat <- bind_rows(dat1, dat2)
+rm(dat1, dat2)
+
+compare.pm25 <- dcast(compare.dat, Date+Site~Source, mean, value.var="PM2.5")
+compare.pm25$Diff <- compare.pm25$美领馆-compare.pm25$环保局
+compare.dat$YearMon <- as.numeric(format(compare.dat$Date, "%Y%m"))
+compare.dat$Year <- as.integer(format(compare.dat$Date, "%Y"))
+compare.dat.yr <- dcast(compare.dat, Year+Source+Site~., mean, value.var="PM2.5", na.rm=TRUE)
+compare.dat.yrmo <- dcast(compare.dat, YearMon+Source+Site~., mean, value.var="PM2.5", na.rm=TRUE)
+```
+
+```{r compare plot}
+library(ggplot2)
+library(ggthemes)
+library(gridExtra)
+udt <- function(axis.x.text.angle=0) theme_hc() + 
+    theme(axis.ticks=element_line(linetype=0),
+          axis.text.x=element_text(angle=axis.x.text.angle))
+for (i in unique(pm25us$Site))
+    print(
+        ggplot(compare.dat[compare.dat$Site == i,]) + 
+            geom_line(aes(Date, PM2.5, color=Source), size=0.25) + 
+            scale_color_hc() + scale_fill_hc() + udt() +
+            ggtitle(paste("PM2.5 of", i)))
+for (i in unique(pm25us$Site))
+    print(
+        ggplot(compare.dat[compare.dat$Site == i,]) + 
+            geom_boxplot(aes(Source, PM2.5, color=Source, fill=Source), alpha=0.5) + 
+            facet_grid(~Year) + scale_color_hc() + scale_fill_hc() + udt(90) + 
+            ggtitle(paste("PM2.5 of", i)))
+with(compare.pm25[compare.pm25$Date>"2013-10-27",], 
+     hist(Diff, freq=FALSE, col="deepskyblue", border="white"))
+ks.test(compare.pm25[["Diff"]], "pnorm", 0)
+ggplot(compare.pm25[compare.pm25$Date>"2013-10-27",], 
+       aes(Date, Diff)) + geom_line() + scale_color_hc() + udt() +
+    facet_wrap(~Site, nc=2)
+ggplot(compare.pm25[compare.pm25$Date>"2013-10-27",], 
+       aes(Diff)) + geom_histogram() + scale_color_hc() + udt() +
+    facet_wrap(~Site, nc=2)
+ggplot(compare.pm25[compare.pm25$Date>"2013-10-27",], 
+       aes(format(Date, "%m"), Diff)) + geom_boxplot() + scale_color_hc() + udt() +
+    facet_wrap(~Site, nc=2)
+for (i in unique(pm25us$Site)){
+    plot.dt <- compare.pm25[!is.na(compare.pm25$Diff) & compare.pm25$Site==i,]
+    p1 <- ggplot(plot.dt, 
+       aes(as.integer(format(Date, "%m")), Diff)) + geom_smooth(method="loess") + 
+        scale_x_continuous(breaks=1:12) + scale_color_hc() + udt() + 
+        labs(x="月份", y="美领馆-环保局",title=paste("PM2.5测量值月均差异,", i))
+    p2 <- ggplot(plot.dt, 
+       aes(format(Date, "%m"), 美领馆)) + stat_boxplot(geom="errorbar") + 
+        geom_boxplot() + scale_color_hc() + udt() + 
+        labs(x="月份", y="PM2.5测量值", title=paste("美领馆PM2.5月均测量值,", i))
+    grid.arrange(p1, p2, ncol=2)
+}
+
+for (i in unique(pm25us$Site)){
+    plot.dt <- compare.pm25[!is.na(compare.pm25$Diff) & compare.pm25$Site==i & 
+                                compare.pm25$Date<"2017-1-1",]
+    p1 <- ggplot(plot.dt, 
+       aes(as.integer(format(Date, "%Y")), Diff)) + geom_smooth(method="loess") + 
+        scale_color_hc() + udt() + 
+        labs(x="年份", y="美领馆-环保局",title=paste("PM2.5测量值年均差异,", i))
+    p2 <- ggplot(plot.dt, 
+       aes(format(Date, "%Y"), 美领馆)) + stat_boxplot(geom="errorbar") + 
+        geom_boxplot() + scale_color_hc() + udt() + 
+        labs(x="年份", y="PM2.5测量值", title=paste("美领馆PM2.5年均测量值,", i))
+    grid.arrange(p1, p2, ncol=2)
+}
+```
+
+右偏分布。取个对数就正态了。
+
+```{r qqnorm}
+library(lattice)
+qqmath(~PM2.5 | Site, data=compare.dat[!is.na(compare.dat$PM2.5),], 
+       distribution=qnorm, pch="+", main="qqnorm of PM2.5")
+qqmath(~log(PM2.5) | Site, data=compare.dat[!is.na(compare.dat$PM2.5),], 
+       distribution=qnorm, pch="+", main="qqnorm of log(PM2.5)")
+```
+
+```r
+cbind(
+    with(compare.dat, tapply(PM2.5, list(Site, Source),mean, na.rm=TRUE)),
+    with(compare.dat, tapply(PM2.5, list(Site, Source),sd, na.rm=TRUE))
+)
+```
+
+```{r pair t}
+with(compare.pm25, t.test(log(环保局), log(美领馆), paired=TRUE))
+for (city in unique(pm25us$Site)){
+    print(with(compare.pm25[compare.pm25$Site==city,], 
+         t.test(log(环保局), log(美领馆), paired=TRUE)))
+}
+```
+
+## 相关因素?
+
+```{r eda}
+library(ggplot2)
+for (city in cities){
+    df <- dat.tbls[[city]]
+    
+    g <- ggplot(dat.tbls[[city]], aes((风力1+风力2)/2 , PM2.5)) + 
+        geom_point(alpha=0.5) +
+        geom_smooth(method="loess") +
+        ggtitle(paste("PM2.5 vs Wind,", city))
+    print(g)
+}
+```

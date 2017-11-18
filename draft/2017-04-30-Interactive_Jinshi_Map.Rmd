@@ -1,0 +1,315 @@
+---
+title: "北宋明清进士地理分布交互地图"
+author: "madlogos"
+date: "2017-4-28"
+output: 
+  html_document: 
+    keep_md: yes
+    lib_dir: libs
+    self_contained: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r get jinshi data, echo=FALSE}
+library(readr)
+nsong.js <- read_csv("~/下载/CBDB_exams_NSong_WGS84_kto.csv")
+ming.js <- read_csv("~/下载/CBDB_exams_Ming_WGS84_MbJ.csv")
+qing.js <- read_csv("~/下载/CBDB_exams_Qing_WGS84_GWU.csv")
+```
+
+```{r ancient maps, echo=FALSE}
+get_xml_list <- function(xml){
+    library(XML)
+    xmlToList(xmlParse(xml))
+}
+get_coord_df <- function(lst, split="[ ,]", id=1){
+    staging <- strsplit(lst, split)
+    out <- data.frame(matrix(
+        as.numeric(unlist(staging)), byrow=TRUE, ncol=2))
+    names(out) <- c("long", "lat")
+    out$id <- id
+    return(out)
+}
+# 北宋
+nsong.xml <- get_xml_list("~/下载/northSong.kml")
+nsong.bou <- c(
+    nsong.xml[[1]][[3]][[3]]$Polygon$outerBoundaryIs$LinearRing$coordinates,
+    nsong.xml[[1]][[3]][[4]]$Polygon$outerBoundaryIs$LinearRing$coordinates)
+nsong.bou <- mapply(get_coord_df, nsong.bou, id=1:2, SIMPLIFY=FALSE)
+names(nsong.bou) <- 1:2
+nsong.bou <- do.call('rbind', nsong.bou)
+# 明朝
+ming.xml <- get_xml_list("~/下载/ming.kml")
+ming.bou <- c(
+    ming.xml[[1]][[3]][[3]]$outerBoundaryIs$LinearRing$coordinates,
+    ming.xml[[1]][[4]][[3]]$outerBoundaryIs$LinearRing$coordinates,
+    ming.xml[[1]][[5]][[3]]$outerBoundaryIs$LinearRing$coordinates)
+ming.bou <- mapply(get_coord_df, ming.bou, id=1:3, SIMPLIFY=FALSE)
+names(ming.bou) <- 1:3
+ming.bou <- do.call('rbind', ming.bou)
+# 清朝
+qing.xml <- get_xml_list("~/下载/qing.kml")
+qing.bou <- c(
+    qing.xml[[1]][[3]][[3]]$outerBoundaryIs$LinearRing$coordinates,
+    qing.xml[[1]][[4]][[3]]$outerBoundaryIs$LinearRing$coordinates,
+    qing.xml[[1]][[5]][[3]]$outerBoundaryIs$LinearRing$coordinates,
+    qing.xml[[1]][[6]][[3]]$outerBoundaryIs$LinearRing$coordinates)
+qing.bou <- mapply(get_coord_df, qing.bou, id=1:4, SIMPLIFY=FALSE)
+names(qing.bou) <- 1:4
+qing.bou <- do.call('rbind', qing.bou)
+rm(nsong.xml, ming.xml, qing.xml)
+```
+
+```{r get address, echo=FALSE}
+library(RSQLite)
+con <- dbConnect(SQLite(), "~/下载/cbdb_sqlite.db")
+addr <- dbReadTable(con, "ADDRESSES")
+dbDisconnect(con)
+```
+
+```{r udf addr dict, echo=TRUE}
+merge_prov <- function(addr, jsdt, dyn.name){
+	addr.dyn <- addr[addr$belongs3_Name == dyn.name | 
+					  addr$belongs4_Name == dyn.name |
+                      addr$belongs5_Name == dyn.name,]
+	addr.dyn <-addr.dyn[!is.na(addr.dyn$c_name_chn),]
+	addr.dyn$Prov <- addr.dyn$belongs2_Name
+	i <- which(addr.dyn$belongs4_Name == dyn.name)
+	addr.dyn$Prov[i] <- addr.dyn$belongs3_Name[i]
+	i <- which(addr.dyn$belongs5_Name == dyn.name)
+	addr.dyn$Prov[i] <- addr.dyn$belongs4_Name[i]
+	addr.dyn <- addr.dyn[!duplicated(addr.dyn$c_name_chn),]
+	js <- merge(jsdt, addr.dyn[,c("c_name_chn", "Prov")], 
+                by.x="AddrChn", by.y="c_name_chn", all.x=TRUE)
+	return(js)
+}
+```
+
+```{r merge prov, echo=TRUE}
+nsong.js <- merge_prov(addr, nsong.js, "宋朝")
+ming.js <- merge_prov(addr, ming.js, "明朝")
+qing.js <- merge_prov(addr, qing.js, "清朝")
+```
+
+```{r rectify prov, echo=FALSE, eval=FALSE}
+dict.song <- data.frame(
+    addr=c("保昌", "酁水", "麨水", "成都", "崇寧", "淳安", "大興", "奉篂", "乾封", "光炆", "華陽", "瀐陽", "浚儀", "臨清", "濾德", "濾陵", "內黃", "寧都", "彭炆", "郫縣", "青城", "曲阜", "雙流", "灀江", "宋城", "睢陽", "通義", "桐瀅", "烔陰", "烔源", "隇留", "武德", "務源", "夏津", "新酁", "新都", "新繁", "蕿湖", "郾城", "陽翟", "揚子", "瀷山", "闉中", "瀅江", "瀅陵", "虞城", "豫章", "元城", "長社", "宗城"),
+    prov=c())
+
+```
+
+```{r rand points}
+nsong.js$long <- nsong.js$x_coord + rnorm(nrow(nsong.js))/100
+nsong.js$lat <- nsong.js$y_coord + rnorm(nrow(nsong.js))/100
+ming.js$long <- ming.js$x_coord + rnorm(nrow(ming.js))/100
+ming.js$lat <- ming.js$y_coord + rnorm(nrow(ming.js))/100
+qing.js$long <- qing.js$x_coord + rnorm(nrow(qing.js))/100
+qing.js$lat <- qing.js$y_coord + rnorm(nrow(qing.js))/100
+```
+
+```{r draw map}
+library(leaflet)
+make_leaflet <- function(refMap, dyn, bgColor="red", dataset, cutyears){
+    dataset$period <- cut(
+        dataset$EntryYear, cutyears, include.lowest=TRUE,
+        labels=paste(sprintf("%4d", cutyears[1:(length(cutyears)-1)]),
+                     sprintf("%4d", cutyears[2:length(cutyears)]), sep="-"))
+    dataset <- dataset[order(dataset$period),]
+    g <- leaflet() %>% addProviderTiles(providers$OpenStreetMap)
+    for (i in unique(refMap$id)){
+        g <- g %>% 
+            addPolygons(~long, ~lat, data=refMap[refMap$id==i,], 
+		        label=dyn, labelOptions=labelOptions(textsize="20px"),
+		        weight=1, fillColor=bgColor, color=bgColor)
+    }
+    pal <- colorFactor(
+        viridis::plasma(2*nlevels(dataset$period)), 
+        levels=levels(dataset$period), ordered=TRUE)
+    g <- g %>% addCircleMarkers(
+        ~long, ~lat, data=dataset, radius=2, 
+        label=paste(dataset$NameChn, dataset$Name),
+		popup=paste(dataset$EntryYear, "<br>", dataset$Prov, 
+		            dataset$AddrChn, dataset$AddrName, sep=" "),
+		color=~pal(period), group=~period)
+    g %>% addLayersControl(
+        overlayGroups=rev(levels(dataset$period)),
+        options=layersControlOptions(
+            collapse=FALSE)
+        )
+}
+make_leaflet(nsong.bou, "北宋", "red", nsong.js, c(960, 1021, 1085, 1127))
+make_leaflet(ming.bou, "明朝", "red", ming.js, c(1368, 1434, 1572, 1644))
+make_leaflet(qing.bou, "清朝", "black", qing.js, c(1644, 1735, 1850, 1911))
+```
+
+```{r basemap, echo=FALSE}
+library(rgdal)
+cn.mapdata <- readOGR("/home/madlogos/下载/Regime_Bou/CHN_adm1.shp")
+cn.mapdata <- rmapshaper::ms_simplify(cn.mapdata)
+tw.mapdata <- readOGR("/home/madlogos/下载/Regime_Bou/TWN_adm0.shp")
+tw.mapdata <- rmapshaper::ms_simplify(tw.mapdata)
+library(ggplot2)
+p.chn <- ggplot() + geom_polygon(
+    aes(long, lat, group=group), data=cn.mapdata, 
+    fill='gray97', color='gray', linetype=2, size=0.2) + 
+    geom_polygon(
+        aes(long, lat, group=group), data=tw.mapdata, 
+        fill='gray97', color='gray', linetype=2, size=0.2) +
+    theme_minimal() + coord_map() 
+
+p.song <- p.chn + geom_polygon(aes(long, lat, group=id), 
+	data=nsong.bou, fill="red", alpha=0.1) +
+    ggtitle("北宋疆域")
+p.ming <- p.chn + geom_polygon(aes(long, lat, group=id), 
+	data=ming.bou, fill="red", alpha=0.1) +
+    ggtitle("明朝疆域")
+p.qing <- p.chn + geom_polygon(aes(long, lat, group=id), 
+	data=qing.bou, fill="black", alpha=0.1)+
+    ggtitle("清朝疆域")
+```
+
+```r
+library(animation)
+oopt <- ani.options(interval=2, ani.width=640, ani.height=480)
+saveGIF({cutyears <- c(960, 1021, 1085, 1127)
+    nsong.js$period <- cut(
+        nsong.js$EntryYear, cutyears, include.lowest=TRUE,
+        labels=paste(sprintf("%4d", cutyears[1:(length(cutyears)-1)]),
+                     sprintf("%4d", cutyears[2:length(cutyears)]), sep="-"))
+    for (i in levels(nsong.js$period)){
+        print(p.song + stat_density_2d(aes(x_coord, y_coord, fill=..level..), 
+        data=nsong.js[nsong.js$period==i,], geom="polygon", alpha=0.5) +
+        scale_fill_gradient(low="cyan", high="darkblue")+
+        ggtitle(paste0("北宋进士来源地 (", i, ")")))
+    }
+}, "song.gif")
+saveGIF({cutyears <- c(1368, 1434, 1572, 1644)
+    ming.js$period <- cut(
+        ming.js$EntryYear, cutyears, include.lowest=TRUE,
+        labels=paste(sprintf("%4d", cutyears[1:(length(cutyears)-1)]),
+                     sprintf("%4d", cutyears[2:length(cutyears)]), sep="-"))
+    for (i in levels(ming.js$period)){
+        print(p.ming + stat_density_2d(aes(x_coord, y_coord, fill=..level..), 
+        data=ming.js[ming.js$period==i,], geom="polygon", alpha=0.5) +
+        scale_fill_gradient(low="cyan", high="darkblue")+
+        ggtitle(paste0("明朝进士来源地 (", i, ")")))
+    }
+}, "ming.gif")
+saveGIF({cutyears <- c(1644, 1735, 1850, 1911)
+    qing.js$period <- cut(
+        qing.js$EntryYear, cutyears, include.lowest=TRUE,
+        labels=paste(sprintf("%4d", cutyears[1:(length(cutyears)-1)]),
+                     sprintf("%4d", cutyears[2:length(cutyears)]), sep="-"))
+    for (i in levels(qing.js$period)){
+        print(p.qing + stat_density_2d(aes(x_coord, y_coord, fill=..level..), 
+        data=qing.js[qing.js$period==i,], geom="polygon", alpha=0.5) +
+        scale_fill_gradient(low="cyan", high="darkblue")+
+        ggtitle(paste0("清朝进士来源地 (", i, ")")))
+    }
+}, "qing.gif")
+ani.options(oopt)
+```
+
+```{r modern china cities}
+cn.cities <- readOGR("/home/madlogos/下载/Regime_Bou/CHN_adm2.shp")
+cn.cities <- rmapshaper::ms_simplify(cn.cities)
+tw.cities <- readOGR("/home/madlogos/下载/Regime_Bou/TWN_adm2.shp")
+tw.cities <- rmapshaper::ms_simplify(tw.cities)
+```
+
+```r
+which_polygon <- function(point, cn.cities, tw.cities){
+    library(sp)
+    out <- over(SpatialPoints(
+        matrix(point, nrow=1), 
+        proj4string = cn.cities@proj4string), cn.cities)
+    if (is.na(out$ID_0))
+        out <- over(SpatialPoints(
+            matrix(point, nrow=1), 
+            proj4string = tw.cities@proj4string), tw.cities)
+    return(out)
+}
+library(data.table)
+nsong.js.stat <- dcast(nsong.js, x_coord+y_coord~., length)
+ming.js.stat <- dcast(ming.js, x_coord+y_coord~., length)
+qing.js.stat <- dcast(qing.js, x_coord+y_coord~., length)
+library(parallel)
+cl <- makeCluster(getOption("cl.cores", 2))
+nsong.js.belong <- parApply(cl, nsong.js.stat[,c("x_coord", "y_coord")], 
+                            1, which_polygon, cn.cities, tw.cities)
+ming.js.belong <- parApply(cl, ming.js.stat[,c("x_coord", "y_coord")], 
+                           1, which_polygon, cn.cities, tw.cities)
+qing.js.belong <- parApply(cl, qing.js.stat[,c("x_coord", "y_coord")], 
+                           1, which_polygon, cn.cities, tw.cities)
+stopCluster(cl)
+library(dplyr)
+nsong.js.belong <- do.call('bind_rows', nsong.js.belong)
+ming.js.belong <- do.call('bind_rows', ming.js.belong)
+qing.js.belong <- do.call('bind_rows', qing.js.belong)
+nsong.js.belong$num <- nsong.js.stat$`.`
+ming.js.belong$num <- ming.js.stat$`.`
+qing.js.belong$num <- qing.js.stat$`.`
+```
+
+```{r get belong stat, echo=FALSE}
+nsong.js.belong <- read_csv("~/下载/SongJinshi_belong.csv")
+ming.js.belong <- read_csv("~/下载/MingJinshi_belong.csv")
+qing.js.belong <- read_csv("~/下载/QingJinshi_belong.csv")
+```
+
+```{r belong stat}
+library(data.table)
+nsong.js.belong <- dcast(nsong.js.belong, NAME_1+NAME_2+NL_NAME_2~., sum, value.var="num")
+nsong.js.belong$DYNASTY <- "北宋"
+ming.js.belong <- dcast(ming.js.belong, NAME_1+NAME_2+NL_NAME_2~., sum, value.var="num")
+ming.js.belong$DYNASTY <- "明朝"
+qing.js.belong <- dcast(qing.js.belong, NAME_1+NAME_2+NL_NAME_2~., sum, value.var="num")
+qing.js.belong$DYNASTY <- "清朝"
+library(dplyr)
+js.belong <- do.call("bind_rows", list(nsong.js.belong, ming.js.belong, qing.js.belong))
+js.belong$NAME_2 <- stringr::str_replace(js.belong$NAME_2, "^([^]]+)\\]+$", "\\1")
+js.belong$.[js.belong$.==0] <- NA
+js.order <- dcast(js.belong, NAME_1+NAME_2+NL_NAME_2~DYNASTY, sum, 
+                  value.var=".", margins="DYNASTY")
+knitr::kable(js.order[order(js.order$`(all)`, decreasing=TRUE),])
+js.order.prov <- dcast(js.belong, NAME_1~DYNASTY, sum, value.var=".", margins="DYNASTY")
+knitr::kable(js.order.prov[order(js.order.prov$`(all)`, decreasing=TRUE),])
+```
+
+```{r jinshi prov}
+library(recharts)
+dict <- geoNameMap[geoNameMap$FKEY==31, c("EN", "CN")]
+js.order.prov <- merge(js.order.prov, dict, by.x="NAME_1", by.y="EN", all.x=TRUE)
+js.order.ec <- melt(js.order.prov[,c(2:4,6)], id="CN")
+js.order.ec$value[js.order.ec$value==0] <- NA
+echartR(js.order.ec, CN, value, t=variable, type="map_china", subtype="average") %>%
+    setDataRange(splitNumber=0, color=c('darkblue','cyan')) %>%
+    setTitle("N of Jinshi by Provice", pos=11) %>% 
+    setTimeline(autoPlay=TRUE) %>% setLegend(FALSE)
+```
+
+```{r jinshi city}
+knitr::kable(cn.cities@data[,c("NL_NAME_2","NAME_1")])
+cn.cities@data <- merge(cn.cities@data, js.order[,c("北宋", "明朝", "清朝", "NL_NAME_2")], 
+                        by="NL_NAME_2", all.x=TRUE, all.y=FALSE, sort=FALSE)
+cn.cities@data <- cn.cities@data[order(cn.cities@data$ID_2),]
+row.names(cn.cities@data) <- 0:(nrow(cn.cities@data)-1)
+for (i in c("北宋", "明朝", "清朝"))
+    cn.cities[[i]][cn.cities[[i]]==0] <- NA
+knitr::kable(cn.cities@data[,c("NL_NAME_2","NAME_1")])
+leaflet(cn.cities) %>% addProviderTiles(providers$OpenStreetMap) %>%
+    addPolygons(fillColor=~colorNumeric(c("cyan", "darkblue"), `北宋`)(`北宋`),
+                weight=1, fillOpacity=0.5, color="white", group="北宋",
+                label=paste(cn.cities@data$NL_NAME_2, cn.cities@data$`北宋`)) %>%
+    addPolygons(fillColor=~colorNumeric(c("cyan", "darkblue"), `明朝`)(`明朝`),
+                weight=1, fillOpacity=0.5, color="white", group="明朝",
+                label=paste(cn.cities@data$NL_NAME_2, cn.cities@data$`明朝`)) %>%
+    addPolygons(fillColor=~colorNumeric(c("cyan", "darkblue"), `清朝`)(`清朝`),
+                weight=1, fillOpacity=0.5, color="white", group="清朝",
+                label=paste(cn.cities@data$NL_NAME_2, cn.cities@data$`清朝`)) %>%
+    addLayersControl(baseGroups=c("北宋", "明朝", "清朝"),
+                     options=layersControlOptions(collapse=FALSE))
+```

@@ -1,0 +1,490 @@
+---
+title: "Scrapy Infectiious Disease Stat"
+author: "madlogos"
+date: "2017/3/30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 载入附加包
+
+```{r}
+sapply(c("rvest", "stringr", "doParallel", "foreach", "dplyr", 
+         "docxtractr", "tm", "readxl", "RODBC", "readr", "ggplot2", 
+         "ggthemes", "data.table"), 
+       invisible(require), character.only=TRUE, quietly=TRUE)
+```
+ 
+
+# 抓取目录
+
+```{r}
+# 获取目录
+getTOC <- function(url){
+    html <- read_html(url)
+    cast <- html_nodes(html, "ul.zxxx_list")[[1]]
+    lists <- html_nodes(cast, "a")
+    dop <- html_nodes(cast, "span.ml")
+    return(data.frame(
+        href=html_attr(lists, "href"),
+        title=str_trim(html_text(lists)),
+        dop=html_text(dop),
+        stringsAsFactors=FALSE))
+}
+
+urls <- paste0(
+    "http://www.nhfpc.gov.cn/jkj/s2907/new_list", 
+    c("", paste0("_", 2:23)), ".shtml")
+toc <- lapply(urls, getTOC)
+toc <- do.call("bind_rows", toc)
+toc <- toc[str_detect(toc$title, "月[份]*全国法定"),]
+toc$href <- str_replace(
+    toc$href, "^.+/jkj(.+$)", "http://www.nhfpc.gov.cn/jkj\\1")
+idx.noyr <- which(! str_detect(toc$title, "\\d+年"))
+toc$date <- NA
+toc$date[idx.noyr] <- paste(
+    str_replace(toc$dop[idx.noyr], "(^\\d+).+", "\\1"),
+    str_replace(toc$title[idx.noyr], ".+(\\d+)月.+", "\\1"), "1",
+    sep="-")
+toc$date[-idx.noyr] <- str_replace(
+    toc$title[-idx.noyr], "\\D*(\\d+)年(\\d+)月.+", "\\1-\\2-1")
+toc$date <- as.Date(toc$date)
+```
+
+# 抽取网页文本
+
+```{r get web text}
+getWebPage <- function(url){
+    html <- read_lines(url)
+    return(paste(html, collapse="\n"))
+}
+registerDoParallel(cores=parallel::detectCores())
+pages <- foreach(i=seq_along(toc$href), .combine=c) %dopar% 
+    invisible(getWebPage(toc$href[i]))
+names(pages) <- as.character(toc$date)
+```
+
+# 简单分析
+
+```{r easy stat}
+getKeyNums <- function(page){
+    page <- read_html(page)
+    txt.node <- html_nodes(page, "div.con")
+    txt <- html_text(txt.node)
+    inc.tot <- as.integer(str_replace(
+        txt, regex(
+            ".+?(发病|报告)\\D+(\\d{6,})[例人].+", dotall=TRUE
+            ), "\\2"))
+    mot.tot<- as.integer(str_replace(
+        txt, regex(
+            ".+?(发病|报告).+?死亡\\D*?(\\d+)[例人].+", dotall=TRUE
+            ), "\\2"))
+    inc.b <- as.integer(str_replace(
+        txt, regex(
+            ".+?乙类.+?(\\d+)[例人].+", dotall=TRUE
+            ), "\\1"))
+    mot.b <- as.integer(str_replace(
+        txt, regex(
+            ".+?乙类.+?死亡\\D*?(\\d+)[例人].+", dotall=TRUE), 
+        "\\1"))
+    inc.c <- as.integer(str_replace(
+        txt, regex(
+            ".+?丙类.+?(\\d+)[例人].+", dotall=TRUE
+            ), "\\1"))
+    mot.c <- as.integer(str_replace(
+        txt, regex(
+            ".+?丙类.+?死亡\\D*?(\\d+)[例人].+", dotall=TRUE
+            ), "\\1"))
+    if (identical(inc.tot, inc.b)) inc.tot <- inc.tot + inc.c
+    if (identical(mot.tot, mot.b)) mot.tot <- mot.tot + mot.c
+    return(c(inc.tot, mot.tot))
+}
+
+genl.stat <- as.data.frame(t(sapply(pages, getKeyNums)))
+names(genl.stat) <- c("Incidence", "Mortality")
+genl.stat$Date <- as.Date(row.names(genl.stat))
+genl.stat <- genl.stat[!duplicated(genl.stat$Date) & 
+                           genl.stat$Date > "2004-12-01",]
+genl.stat <- genl.stat[order(genl.stat$Date),]
+genl.stat["2009-04-01", 1:2] <- c(338281, 576)
+genl.stat <- melt(genl.stat, id="Date")
+ggplot(genl.stat) + geom_line(aes(Date, value, color=variable)) + theme_hc() +
+    scale_color_hc() + scale_x_date(date_breaks="1 year", date_labels="%Y") +
+    facet_grid(variable~., scales="free") + 
+    theme(axis.ticks=element_line(linetype=0)) +
+    labs(title="Incidence And Mortality of Notifiable Infectious Diseases",
+        subtitle="2005/1-2017/2", caption="source: NHFPC")
+```
+
+
+
+# 抽取表格
+
+```{r udf save files}
+# 存取网页表格
+getWebTbl <- function(url, tbl.name){
+    if (any(file.exists(
+        paste0("~/infectdis/", tbl.name, ".", 
+               c("xls", "csv", "doc", "gif", "jpg", "png"))))){
+        return(invisible())
+    }
+    html <- read_html(url)
+    cast <- html_nodes(html, "table")
+    cast.attach <- html_nodes(html, "div.con a")
+    regex.attach <- "([Xx][Ll][Ss][Xx]*|[Dd][Oo][Cc][Xx]*)"
+    cast.img <- html_nodes(html, "div.con img")
+    regex.img <- "([Gg][Ii][Ff]|[Pp][Nn][Gg]|[Jj][Pp][Gg])"
+    if (length(cast)>0){
+        out <- html_table(cast, fill=TRUE)[[1]]
+        if (! file.exists(paste0("~/infectdis/", tbl.name, ".csv"))){
+            write_csv(out, paste0("~/infectdis/", tbl.name, ".csv"))
+        }
+    } else if (any(str_detect(
+        cast.attach, paste0("\\.", regex.attach, "\"")))){
+        idx.attach <- which(str_detect(
+            cast.attach, paste0("\\.", regex.attach, "\"")))[1]
+        doc.link <- str_replace(
+            cast.attach[idx.attach], 
+            paste0(".+href=\"(.+?\\.)", regex.attach, "\".+"), "\\1\\2")
+        file.type <- tolower(str_replace(
+            doc.link, paste0(".+\\.", regex.attach, "$"), "\\1"))
+        if (str_detect(doc.link, "^/"))
+            doc.link <- paste0(
+                "http://www.nhfpc.gov.cn", doc.link)
+        if (str_detect(doc.link, "^[^h/]"))
+            doc.link <- paste0(
+                str_replace(url, "^(.+)\\.shtml$", "\\1"),
+                str_replace(doc.link, "^[^/]+(/.+$)", "\\1"))
+        if (! file.exists(paste0(
+            "~/infectdis/", tbl.name, ".", file.type))){
+            doc.file <- download.file(
+                doc.link, destfile=paste0(
+                    "~/infectdis/", tbl.name, ".", file.type))
+        }
+    } else if (any(str_detect(cast.img, paste0(
+        "\\.", regex.img, "\"")))){
+        idx.img <- which(str_detect(
+            cast.img, paste0("\\.", regex.img, "\"")))[1]
+        doc.link <- str_replace(
+            cast.img[idx.img], 
+            paste0(".+img.+src=\"(.+?\\.)", regex.img, "\".+"), "\\1\\2")
+        file.type <- tolower(str_replace(
+            doc.link, paste0(".+\\.", regex.img, "$"), "\\1"))
+        if (str_detect(doc.link, "^/"))
+            doc.link <- paste0(
+                "http://www.nhfpc.gov.cn", doc.link)
+        if (str_detect(doc.link, "^[^h/]"))
+            doc.link <- paste0(
+                str_replace(url, "^(.+)\\.shtml$", "\\1"),
+                str_replace(doc.link, "^[^/]+(/.+$)", "\\1"))
+        if (! file.exists(paste0(
+            "~/infectdis/", tbl.name, ".", file.type))){
+            doc.file <- download.file(
+                doc.link, destfile=paste0(
+                    "~/infectdis/", tbl.name, ".", file.type))
+        }
+    }
+}
+registerDoParallel(cores=parallel::detectCores())
+foreach(i=seq_along(toc$href)) %dopar% 
+    invisible(getWebTbl(toc$href[i], as.character(toc$date[i])))
+```
+
+哪些还没偶抽到？
+
+```{r validate}
+downfile.date <- str_replace(
+    list.files("~/infectdis"), "(^.+)\\.(csv|doc|xls|gif|jpg|png)$", "\\1")
+toc$title[! as.character(toc$date) %in% downfile.date] 
+```
+
+```{r udf read tbl}
+
+# 抽取表格
+readMsoTbl <- function(mso.file, header=TRUE) {
+    file.type <- tolower(str_replace(
+        mso.file, ".+\\.([^\\.]+)$", "\\1"))
+    if (file.type == "csv"){
+        invisible(read_csv(mso.file, col_names=header))
+    }else if (file.type == "docx"){
+        docx <- invisible(read_docx(mso.file))
+        docx_extract_tbl(docx, 1, header=header)
+    }else if (file.type == "xlsx"){
+        invisible(read_excel(mso.file, col_names=header))
+    }else{
+        NULL
+    }
+}
+# 重定义首行
+redefCol <- function(df){
+    if (all(str_detect(colnames(df), "[Xx]\\d"))){
+        colnames(df) <- df[1,]
+        df <- df[2:nrow(df),]
+    }
+    colnames(df) <- str_replace_all(
+        colnames(df), "\\s|\\*", "")
+    return(df)
+}
+# 数据整形
+cleanTbl <- function(df){
+    ## Args
+    ##    df: data.frame
+    ##    dop: date of publication
+    
+    # 去掉空列、空行
+    is.colallNA <- sapply(df, function(vec){
+        all(is.na(vec)) | all(nchar(vec)==0)})
+    is.rowallNA <- apply(df, 1, function(vec){
+        all(is.na(vec)) | all(nchar(vec)==0)})
+    o <- df[!is.rowallNA, !is.colallNA]
+    # 去掉首列空格，名称规范化
+    o[[1]] <- stringr::str_replace_all(
+        o[[1]], "[\\s＊\\*（）]", "")
+    # 确保发病和死亡都是整数
+    invisible(lapply(2:3, function(i){
+        o[[i]] <<- as.numeric(stringr::str_replace(
+            o[[i]], "\\D", ""))
+        o[[i]][is.na(o[[i]])] <<- 0
+    }))
+    return(as.data.frame(o))
+}
+
+data <- lapply(list.files("~/infectdis", full.names=TRUE), 
+               invisible(readMsoTbl))
+dat <- lapply(data, redefCol)
+
+cl <- makeCluster(getOption("cl.cores", detectCores()))
+dat <- parLapply(cl, dat, invisible(cleanTbl))
+names(dat) <- str_replace(
+    list.files("~/infectdis"), "^(.+)\\..+$", "\\1")
+invisible(lapply(1:length(dat), function(i){
+    dat[[i]]$DOP <<- as.Date(names(dat)[i])}))
+dat <- do.call("bind_rows", dat)
+```
+
+```{r dis name}
+dict <- data.frame(
+    pattern=c(
+        "^.*甲乙丙类.*$", "甲乙类传染病小计", 
+        "丙类传染病合计", "([甲乙丙丁戊])肝", "^未分型$|未分型肝炎", 
+        "其他", "人感染H7N9禽流感", "布病", "钩体病", "^.*出血热.*$", 
+        "^.*斑疹伤寒.*$", "伤寒\\+副伤寒"), 
+    replace=c(
+        "合计", "甲乙类传染病合计", "丙类传染病小计", "\\1型肝炎",
+        "肝炎未分型", "其它", "人感染高致病性禽流感", "布鲁氏菌病", 
+        "钩端螺旋体病", "流行性出血热", "流行性和地方性斑疹伤寒",
+        "伤寒和副伤寒")
+)
+apply(dict, 1, function(vec) invisible(
+    dat$病名 <<- str_replace(dat$病名, vec[1], vec[2])))
+
+dat$Class <- NA
+dat$Class[dat$病名 %in% c("霍乱", "鼠疫")] <- "甲类"
+dat$Class[dat$病名 %in% c(
+    "病毒性肝炎", "细菌性和阿米巴性痢疾", "伤寒和副伤寒", "艾滋病",
+    "淋病", "梅毒", "脊髓灰质炎", "麻疹", "百日咳", "白喉", 
+    "流行性脑脊髓膜炎", "猩红热", "流行性出血热", "狂犬病", 
+    "钩端螺旋体病", "布鲁氏菌病", "炭疽", "流行性乙型脑炎",
+    "疟疾", "登革热", "新生儿破伤风", "肺结核", "传染性非典型肺炎",
+    "人感染高致病性禽流感", "血吸虫病", "甲型H1N1流感")] <- "乙类"
+dat$Class[dat$病名 %in% c(
+    "流行性感冒", "流行性腮腺炎", "风疹", "急性出血性结膜炎",
+     "麻风病", "包虫病", "丝虫病", "其它感染性腹泻病", "手足口病",
+    "流行性和地方性斑疹伤寒", "黑热病")] <- "丙类"
+names(dat) <- c("病名", "发病数", "死亡数", "日期", "分类")
+dat$分类 <- factor(dat$分类, levels=c("丙类", "乙类", "甲类"))
+```
+
+```{r}
+makeTsPlot <- function(
+    df, title, unit="4 months", xlab=xvar, ylab=yvar,
+    xvar="日期", yvar="value", gvar="分类", 
+    legend.position=c(0.6, 1.05)
+){
+    ## Arg:
+    ##    df: data.frame, source data
+    ##    title: plot title
+    ##    unit: a num or date_breaks
+    ##    xlab, ylab: x-axis y-axis caption
+    ##    xvar, yvar, gvar: var name of x, y, group
+    ##    legend.position: a value that ggplot2::theme() accepts
+    
+    if (inherits(df[,xvar], c("POSIXt", "Date"))){
+        breaks <- seq(min(df[,xvar]), max(df[,xvar]), unit)
+        labels <- format(breaks, "%m\n%y")
+        min.mon <- sort(format(breaks,"%m"))[1]
+        labels[!str_detect(labels, paste0("^", min.mon))] <- format(
+            breaks[!str_detect(labels, paste0("^", min.mon))], "%m")
+        labels <- str_replace(labels, "^0", "")
+    }else if (is.numeric(df[,xvar])){
+        breaks <- labels <- 
+            seq(min(df[,xvar]), max(df[,xvar]), unit)
+    }else{
+        breaks <- labels <- unique(df[,xvar])
+    }
+    pal <- ggthemes_data$hc$palettes$default[c(1,3,2,4:10)]
+    if (length(pal) < length(unique(df[,gvar]))){
+        pal <- rep(pal, ceiling(
+            length(unique(df[,gvar])) / length(pal)))
+    }
+    pal <- pal[seq_len(length(unique(df[,gvar])))]
+    p <- ggplot(df, aes(eval(parse(text=xvar)), 
+                   eval(parse(text=yvar)), 
+                   color=eval(parse(text=gvar)), 
+                   fill=eval(parse(text=gvar)))) +
+        geom_area(alpha=0.25, position="stack") + 
+        theme_hc() + 
+        scale_fill_manual(
+            guide=guide_legend(title=gvar), values=pal) +
+        scale_color_manual(
+            guide=guide_legend(title=gvar), values=pal) +
+        theme(axis.ticks=element_line(linetype=0),
+              legend.position=legend.position,
+              legend.direction="horizontal") +
+        xlab(xlab) + ylab(ylab) 
+    if (inherits(df[,xvar], c("POSIXt", "Date"))) {
+        p <- p + scale_x_date(breaks=breaks, labels=labels) +
+            labs(title=title, subtitle=paste(
+                format(min(df[,xvar]), "%Y-%m"),
+                format(max(df[,xvar]), "%Y-%m"), sep="~"))
+    }else if (is.numeric(df[,xvar])){
+        p <- p + scale_x_continuous(breaks=breaks, labels=labels) +
+            labs(title=title, subtitle=paste(
+                min(df[,xvar]), max(df[,xvar]), sep="~"))
+    }else{
+        p <- p + scale_x_discrete(breaks=breaks, labels=labels) +
+            labs(title=title, subtitle="")
+    }
+    p
+}
+```
+
+```{r genl trend}
+sta <- dcast(dat, 日期 ~ 分类, sum, value.var="发病数")
+sta <- melt(sta[,1:4], id="日期", variable.name="分类")
+makeTsPlot(sta, "法定传染病每月发病数", xlab="年月", ylab="例数")
+
+sta <- dcast(dat, 日期 ~ 分类, sum, value.var="死亡数")
+sta <- melt(sta[,1:4], id="日期", variable.name="分类")
+makeTsPlot(sta, "法定传染病每月死亡数", xlab="年月", ylab="例数")
+```
+
+```{r monthly trend}
+sta <- dcast(dat, format(日期, "%m") ~ 分类, mean, value.var="发病数")
+names(sta)[1] <- "月份"
+sta <- melt(sta[,1:4], id="月份", variable.name="分类")
+sta$月份 <- as.integer(sta$月份)
+makeTsPlot(sta, "法定传染病平均月发病数", unit=1, ylab="平均例数", xvar="月份")
+
+sta <- dcast(dat, format(日期, "%m") ~ 分类, mean, value.var="死亡数")
+names(sta)[1] <- "月份"
+sta <- melt(sta[,1:4], id="月份", variable.name="分类")
+sta$月份 <- as.integer(sta$月份)
+makeTsPlot(sta, "法定传染病平均月死亡数", unit=1, ylab="平均例数", xvar="月份")
+```
+
+```{r class b}
+sta <- dcast(dat[dat$分类=="乙类",], 病名~., sum, value.var="发病数")
+sta$占比 <- scales::percent(sta$./sum(sta$., na.rm=TRUE))
+head(sta[order(sta$., decreasing=TRUE), c("病名", "占比")], 10)
+
+dat.b <- subset(dat, 分类=="乙类" | str_detect(病名, "肝炎"))
+dat.b <- dat.b[dat.b$病名 != "病毒性肝炎",]
+dat.b$类型 <- NA
+dat.b$类型[str_detect(
+    dat.b$病名, "[甲戊]型肝炎|痢疾|伤寒|脊髓灰质炎")] <- "肠道"
+dat.b$类型[str_detect(
+    dat.b$病名, "结核|麻疹|猩红热|流感|百日咳|脑脊髓膜炎|禽流感|白喉|肺炎")] <- "呼吸道"
+dat.b$类型[str_detect(
+    dat.b$病名, "布鲁氏|疟疾|出血热|血吸虫|登革|乙型脑炎|狂犬|钩端螺旋体|炭疽")] <- "虫媒/自然疫源"
+dat.b$类型[str_detect(
+    dat.b$病名, "[乙丙丁]型肝炎|梅毒|淋病|艾滋病|破伤风|肝炎未分型")] <- "血源/性传"
+
+sta <- dcast(dat.b, 日期 ~ 类型, sum, value.var="发病数")
+sta <- melt(sta, id="日期", variable.name="类型")
+makeTsPlot(sta, "乙类传染病每月发病数", xlab="年月", ylab="例数", gvar="类型")
+
+sta <- dcast(dat.b, 日期 ~ 类型, sum, value.var="死亡数")
+sta <- melt(sta, id="日期", variable.name="类型")
+makeTsPlot(sta, "乙类传染病每月死亡数", xlab="年月", ylab="例数", gvar="类型")
+
+# details
+sta <- dcast(dat.b, 病名~., sum, value.var="发病数")
+top.b <- sta[order(sta$., decreasing=TRUE), "病名"][1:10]
+sta <- dcast(dat.b, 日期 ~ 病名, sum, value.var="发病数")
+sta <- melt(sta, id="日期", variable.name="病名")
+sta$病名 <- as.character(sta$病名)
+sta$病名[! sta$病名 %in% top.b] <- "其它"
+sta <- dcast(sta, 日期 + 病名~., sum, value.var="value")
+sta$病名 <- factor(sta$病名, levels=c(top.b, "其它"))
+makeTsPlot(sta, "乙类传染病每月发病数", xlab="年月", ylab="例数", yvar=".",
+           gvar="病名", legend.position = "bottom")
+
+sta <- dcast(dat.b, 病名~., sum, value.var="死亡数")
+top.b <- sta[order(sta$., decreasing=TRUE), "病名"][1:10]
+sta <- dcast(dat.b, 日期 ~ 病名, sum, value.var="死亡数")
+sta <- melt(sta, id="日期", variable.name="病名")
+sta$病名 <- as.character(sta$病名)
+sta$病名[! sta$病名 %in% top.b] <- "其它"
+sta <- dcast(sta, 日期 + 病名~., sum, value.var="value")
+sta$病名 <- factor(sta$病名, levels=c(top.b, "其它"))
+makeTsPlot(sta, "乙类传染病每月死亡数", xlab="年月", ylab="例数", yvar=".",
+           gvar="病名", legend.position = "bottom")
+```
+
+```{r hep}
+dat.hep <- subset(dat, str_detect(病名, "^肝炎|[^性]肝炎"))
+dat.hep$病名 <- str_replace(dat.hep$病名, "([甲乙丙丁戊])型肝炎|^肝炎(未分)型", "\\1\\2")
+dat.hep$病名 <- factor(dat.hep$病名, levels=c("甲", "乙", "丙", "丁", "戊", "未分型"))
+
+sta <- dcast(dat.hep, 日期 ~ 病名, sum, value.var="发病数")
+sta <- melt(sta, id="日期", variable.name="型别")
+makeTsPlot(sta, "肝炎每月发病数", xlab="年月", ylab="例数", gvar="型别")
+
+sta <- dcast(dat.hep, 日期 ~ 病名, sum, value.var="死亡数")
+sta <- melt(sta, id="日期", variable.name="型别")
+makeTsPlot(sta, "肝炎每月死亡数", xlab="年月", ylab="例数", gvar="型别")
+```
+
+
+```{r class c}
+sta <- dcast(dat[dat$分类=="丙类",], 病名~., sum, value.var="发病数")
+sta$占比 <- scales::percent(sta$./sum(sta$., na.rm=TRUE))
+head(sta[order(sta$., decreasing=TRUE), c("病名", "占比")], 10)
+
+dat.c <- subset(dat, 分类=="丙类" & 日期 >= as.Date("2009-1-1"))
+
+sta <- dcast(dat.c, 日期 ~ 病名, sum, value.var="发病数")
+sta <- melt(sta, id="日期", variable.name="病名")
+makeTsPlot(sta, "丙类传染病每月发病数", xlab="年月", ylab="例数", gvar="病名",
+           legend.position = "bottom")
+
+sta <- dcast(dat.c, 日期 ~ 病名, sum, value.var="死亡数")
+sta <- melt(sta, id="日期", variable.name="病名")
+makeTsPlot(sta, "丙类传染病每月死亡数", xlab="年月", ylab="例数", gvar="病名",
+           legend.position = "bottom")
+
+sta <- dcast(dat.c, format(日期, "%m") ~ 病名, mean, value.var="发病数")
+names(sta)[1] <- "月份"
+sta <- melt(sta, id="月份", variable.name="病名")
+sta$月份 <- as.integer(sta$月份)
+makeTsPlot(sta, "丙类传染病平均月发病数", unit=1, ylab="平均例数", xvar="月份",
+           gvar="病名", legend.position = "bottom")
+
+sta <- dcast(dat.c, format(日期, "%m") ~ 病名, mean, value.var="死亡数")
+names(sta)[1] <- "月份"
+sta <- melt(sta, id="月份", variable.name="病名")
+sta$月份 <- as.integer(sta$月份)
+makeTsPlot(sta, "丙类传染病平均月死亡数", unit=1, ylab="平均例数", xvar="月份",
+           gvar="病名", legend.position = "bottom")
+```
+
+
+```r
+dat.flu <- subset(dat, 病名 =="流行性感冒" & 日期 >= as.Date("2009-1-1"))
+makeTsPlot(dat.flu, "流感每月发病数", xlab="年月", ylab="例数", gvar="病名",
+           xvar="日期", yvar="发病数")
+```
