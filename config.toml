@@ -71,7 +71,7 @@ copyright = "madlogos"            # default: author.name ↓        # 默认为�
   fancybox = true           # see https://github.com/fancyapps/fancybox                 # 是否启用fancybox（图片可点击）
   bootcdn = false           # In china. @Deprecated: use [params.publicCDN]             # 是否使用bootcdn(@Deprecated: 请使用[params.publicCDN])
   mathjax = true            # see https://www.mathjax.org/                              # 是否使用mathjax（数学公式）
-  linkToMarkDown = false    # if you config contentCopyright and hugo output .md files. # 是否在链接到markdown原始文件（如果你配置了下面的许可协议并允许hugo生成markdown文件）
+  linkToMarkDown = true    # if you config contentCopyright and hugo output .md files. # 是否在链接到markdown原始文件（如果你配置了下面的许可协议并允许hugo生成markdown文件）
 
   contentCopyright = '<a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a>'
 
@@ -91,8 +91,8 @@ copyright = "madlogos"            # default: author.name ↓        # 默认为�
 
   [params.reward]                                         # 文章打赏
     enable = true
-    wechat = "/layouts/reward/wechat.png"
-    alipay = "/layouts/reward/alipay.png"
+    wechat = "/static/img/reward/wechat.png"
+    alipay = "/static/img/reward/alipay.png"
 
   [params.social]                                         # 社交链接
     a-email = "mailto:madlogos@gmail.com"
@@ -119,6 +119,11 @@ copyright = "madlogos"            # default: author.name ↓        # 默认为�
   mediaType = "text/plain"
   isPlainText = true
   isHTML = false
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  series = "series"
 
 [outputs]
   home = ["HTML", "RSS"]

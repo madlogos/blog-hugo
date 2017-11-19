@@ -1,17 +1,18 @@
 ---
 title: 一次不太成功的搬砖（上）：爬取法定传染病疫情月报数据
-url: infectdis_stat1
+slug: infectdis_stat1
 description: "卫计委每月发布全国法定传染病疫情公告，包含甲乙丙三类传染病的发病和死亡统计。本打算趁清明假期（什么鬼），用rvest包写个简单的脚本，爬下来分析玩。不料遇到许多莫名其妙的坑。最后，好好一个【爬虫工程】变成了【批处理下载】，十分胸闷。拜托卫计委要继续提高自己的姿势水平。"
-author: madlogos
 date: 2017-04-07
 lastmod: 2017-04-07
 tags: [传染病, 疫情报告, rvest]
 keywords: ["法定传染病", "疫情报告", "爬虫"]
+series: ["法定传染病"]
 categories: [数据]
 isCJKLanguage: true
-show_comment: true
-comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs: 
+  - html
+  - markdown
 ---
 
 # 带怀旧色彩的源起

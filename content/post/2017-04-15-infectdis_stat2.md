@@ -1,17 +1,18 @@
 ---
 title: 一次不太成功的搬砖（中）：rvest爬取法定传染病疫情月报数据
-url: infectdis_stat2
+slug: infectdis_stat2
 description: "用rvest爬取到卫计委法定传染病疫情月报的（坑爹）附件，通过构造工作函数，并行遍历，完成提取->清理->合并，获得一个真正可用的数据合集。"
-author: madlogos
 date: 2017-04-15
 lastmod: 2017-04-15
 tags: [传染病, 疫情报告, rvest]
 keywords: ["法定传染病", "疫情报告", "爬虫"]
 categories: [数据]
+series: ["法定传染病"]
 isCJKLanguage: true
-show_comment: true
-comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs: 
+  - html
+  - markdown
 ---
 
 # 数据提取
@@ -35,9 +36,9 @@ outputs: ["html", "markdown"]
 
 满脸辛酸地处理完了这些杂碎，把doc和xls存作docx和xlsx，接下来总算能把它们当成正常的xml来处理了。
 
-> 有读者留言提到，这些数据其实都可以从公共卫生信息网申请到。没错。但是作为数据公开党，我对这种公共数据管制甚至收费牟利的做法非常不屑。这根本不符合如今的时代精神。本文提到的这些结构化数据文档，都已打包存到[七牛云](http://ohghnje4x.bkt.clouddn.com/image/170415/infect_dis_stat.zip)。人人都可以免费用。
-
 <!--more-->
+
+> 有读者留言提到，这些数据其实都可以从公共卫生信息网申请到。没错。但是作为数据公开党，我对这种公共数据管制甚至收费牟利的做法非常不屑。这根本不符合如今的时代精神。本文提到的这些结构化数据文档，都已打包存到[七牛云](http://ohghnje4x.bkt.clouddn.com/image/170415/infect_dis_stat.zip)。人人都可以免费用。
 
 ## `docxtractr`
 

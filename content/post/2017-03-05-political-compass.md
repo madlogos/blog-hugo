@@ -1,17 +1,18 @@
 ---
-title: 朝左还是朝右？来看一份17万行的小样本数据
-url: political-compass
+title: "朝左还是朝右？来看一份17万行的小样本数据"
+slug: political-compass
 description: "来自zuobiao.me 2014年的17万条政治倾向调查数据，给我们提供了一个21世纪初叶中国网民意识形态的切片样本。可惜的是，这个样本不能继续随访下去了。"
-author: madlogos
 date: 2017-03-05
 lastmod: 2017-03-05
 tags: ["政治坐标", "坐标网"]
 keywords: ["政治坐标", "坐标网"]
+series: ["政治坐标"]
 categories: ["数据"]
 isCJKLanguage: true
-comment: true
-show_comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs: 
+  - html
+  - markdown
 ---
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170305/left_right_wing_us.jpg)

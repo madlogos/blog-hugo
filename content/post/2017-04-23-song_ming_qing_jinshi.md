@@ -1,17 +1,18 @@
 ---
 title: 北宋、明清进士空间分析
-url: song_ming_qing_jinshi
+slug: song_ming_qing_jinshi
 description: "利用哈佛地理可视化平台、中国历代人物传记数据库的标记数据集，以及“发现中国”导出的地理数据，绘制北宋、明、清的进士来源地，以及它们比重的历时变迁。莆田是进士第一来源地，但至清时，福建、江西的比重已经不高。"
-author: madlogos
 date: 2017-04-23
 lastmod: 2017-04-23
 tags: [进士, 地理分析]
 keyword: [“进士”, “北宋”, “明清”, “空间”, “地理”, “GIS”, “CBDB”]
 categories: [数据]
+series: ["进士空间分析"]
 isCJKLanguage: true
-show_comment: true
-comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs: 
+  - html
+  - markdown
 ---
 
 # 哈佛人文地理可视化平台
@@ -29,8 +30,11 @@ outputs: ["html", "markdown"]
 ![](http://ohghnje4x.bkt.clouddn.com/image/170423/cbdb_data.png)
 
 这就十分厉害了：
+
 1. CBDB，是大名鼎鼎的哈佛中国历代人物传记数据库(China Biographical Database)。这个图层的基础，来自CBDB，可靠性就有保障了。这个数据库内容非常丰富，后面还会用到；
 2. WGS84，说明坐标系用的是WGS-84坐标系，所以只要利用基于WGS-84的GIS工具，就不需要针对GCJ-02或BD-09做逆偏置了。
+
+<!--more-->
 
 # 进士最大来源地？
 
@@ -44,8 +48,6 @@ qing.js <- read_csv("下载/CBDB_exams_Qing_WGS84_GWU.csv")
 ```
 
 简单看一下哪个地方来的进士最多。
-
-<!--more-->
 
 ## 北宋
 

@@ -1,17 +1,18 @@
 ---
 title: 一次不太成功的搬砖（下）：rvest爬取法定传染病疫情月报数据
-url: infectdis_stat3
+slug: infectdis_stat3
 description: "从报病数和死亡数来看，传染病防制的主流已经彻底转向慢性传染病（艾滋病、结核病）和儿童传染病（手足口病）。"
-author: madlogos
 date: 2017-04-16
 lastmod: 2017-04-16
 tags: [传染病, 疫情报告, rvest]
 keywords: ["法定传染病", "疫情报告", "爬虫"]
 categories: [数据] 
+series: ["法定传染病"]
 isCJKLanguage: true
-show_comment: true
-comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs: 
+  - html
+  - markdown
 ---
 
 # 甲乙丙类每月发病、死亡数

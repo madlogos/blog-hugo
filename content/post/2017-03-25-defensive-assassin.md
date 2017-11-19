@@ -1,17 +1,18 @@
 ---
 title: 礼法两难的辱母杀人案
-url: defensive-assassin
+slug: defensive-assassin
 description: "父（母）受恶侮，在传统中是足以“暴起杀之”的场景，此时失控反抗，不能以法之名简单地冷酷制裁。这样做，我们这个文明的底线就崩了。"
-author: madlogos
 date:  2017-03-25
 lastmod: 2017-03-25
 tags: [礼法, 时评]
-keywords: [“冠县”, “辱母”, “杀人”]
+keywords: ["冠县", "辱母杀人"]
 categories: [时评]
+series: ["辱母杀人"]
 isCJKLanguage: true
-show_comment: true
-comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs: 
+  - html
+  - markdown
 ---
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170325/yuan_da_gong_mao.jpg)

@@ -7,7 +7,8 @@ keywords: []
 description: ""
 tags: []
 categories: []
-author: ""
+author: "迷幻主义搬砖号子"
+github: "madlogos"
 
 # you can close something for this content if you open it in config.toml.
 comment: true

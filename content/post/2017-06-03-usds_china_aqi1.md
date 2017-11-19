@@ -1,17 +1,18 @@
 ---
 title: 美领馆PM2.5
-url: usds_china_aqi1
+slug: usds_china_aqi1
 draft: true
 description: "利用animiation、ECharts2和leaflet将进士地理信息动态可视化到地图上。"
-author: madlogos
 date: 2017-06-03
 lastmod: 2017-06-03
 tags: [PM2.5]
 categories: [数据]
+series: ["PM2.5"]
 isCJKLanguage: true
-show_comment: true
-comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs: 
+  - html
+  - markdown
 ---
 
 

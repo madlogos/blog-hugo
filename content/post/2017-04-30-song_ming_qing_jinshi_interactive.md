@@ -1,17 +1,18 @@
 ---
 title: 【动态图版】北宋、明清进士空间可视化分析
-url: song_ming_qing_jinshi_interactive
+slug: song_ming_qing_jinshi_interactive
 description: "利用animiation、ECharts2和leaflet将进士地理信息动态可视化到地图上。"
-author: madlogos
 date: 2017-04-30
 lastmod: 2017-04-30
 tags: [进士, 地理分析, 交互图]
 keywords: [“进士”, “北宋”, “明清”, “空间”, “地理”, “GIS”, “CBDB”]
-categories: [可视化] 
+categories: [可视化]
+series: ["进士空间分析"]
 isCJKLanguage: true
-show_comment: true
-comment: true
-outputs: ["html", "markdown"]
+reward: true
+outputs:
+  - html
+  - markdown
 ---
 
 > 如果浏览器提示本文加载了不安全的脚本，请点允许。
@@ -33,6 +34,8 @@ R有个名包，叫animation，可以用它压制.gif，用在社交媒体效果
 把统计数据绑定到JavaScript控件上，定义好交互方法，用户即可在网页上通过控件操作来调整视觉呈现（切片、缩放、改变类型等）。RStudio发过一个工具框架包htmlwidgets，可以很方便地把已有的JavaScript可视化库移植到R。我们今天就要用到其中的两个：ECharts2和leaflet。
 
 如果再进一步，就是数据交互面板了。R有shiny及其系列衍生品，比如flexboard。想象一下作战室交互图仪表盘面板，几行命令就做出来了。简直酷炫。但是这需要部署在shiny服务器上。
+
+<!--more-->
 
 # 动画
 
@@ -76,8 +79,6 @@ saveGIF({
 ```
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170430/song.gif)
-
-<!--more-->
 
 很明显，前期京畿还很有优势，仁宗开始江南大盛，到神宗以后就是闽人大盛。热力分布持续东南移。
 
@@ -311,7 +312,7 @@ knitr::kable(js.order[order(js.order$`(all)`, decreasing=TRUE),])
 
 [点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/city.html)
 
-然后是省级排名。
+### 然后是省级排名
 
 ```r
 js.order.prov <- dcast(js.belong, NAME_1~DYNASTY, sum, value.var=".", margins="DYNASTY")
