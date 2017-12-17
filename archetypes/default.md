@@ -12,7 +12,8 @@ github: "madlogos"
 
 # you can close something for this content if you open it in config.toml.
 comment: true
-show_comment: true
+show_comments: true
+include_toc: true
 toc: true
 # you can define another contentCopyright. e.g. contentCopyright: "This is an another copyright."
 contentCopyright: true

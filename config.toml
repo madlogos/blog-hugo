@@ -47,7 +47,7 @@ copyright = "madlogos"            # default: author.name ↓        # 默认为�
   url = "/about/"
 
 [params]
-  debug = true             # If true, load `eruda.min.js`. See https://github.com/liriliri/eruda
+  debug = false             # If true, load `eruda.min.js`. See https://github.com/liriliri/eruda
 
   since = "2017"            # Site creation time          # 站点建立时间
 
@@ -68,6 +68,7 @@ copyright = "madlogos"            # default: author.name ↓        # 默认为�
   # 一些全局开关，你可以在每一篇内容的 front matter 中单独关闭某些选项
   # Some global options, you can close something in front matter.
   toc = true                                                                            # 是否开启目录
+  include_toc = true
   fancybox = true           # see https://github.com/fancyapps/fancybox                 # 是否启用fancybox（图片可点击）
   bootcdn = false           # In china. @Deprecated: use [params.publicCDN]             # 是否使用bootcdn(@Deprecated: 请使用[params.publicCDN])
   mathjax = true            # see https://www.mathjax.org/                              # 是否使用mathjax（数学公式）
@@ -91,8 +92,8 @@ copyright = "madlogos"            # default: author.name ↓        # 默认为�
 
   [params.reward]                                         # 文章打赏
     enable = true
-    wechat = "/static/img/reward/wechat.png"
-    alipay = "/static/img/reward/alipay.png"
+    wechat = "/img/reward/wechat.png"
+    alipay = "/img/reward/alipay.png"
 
   [params.social]                                         # 社交链接
     a-email = "mailto:madlogos@gmail.com"

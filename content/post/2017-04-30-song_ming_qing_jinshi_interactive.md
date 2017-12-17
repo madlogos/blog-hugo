@@ -5,7 +5,7 @@ description: "利用animiation、ECharts2和leaflet将进士地理信息动态�
 date: 2017-04-30
 lastmod: 2017-04-30
 tags: [进士, 地理分析, 交互图]
-keywords: [“进士”, “北宋”, “明清”, “空间”, “地理”, “GIS”, “CBDB”]
+keywords: ["进士", "北宋", "明清", "空间", "地理", "GIS", "CBDB"]
 categories: [可视化]
 series: ["进士空间分析"]
 isCJKLanguage: true
@@ -375,4 +375,4 @@ echartR(js.order.ec, CN, value, t=variable, type="map_china", subtype="average")
 
 ----
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%">扫码关注我的的我的公众号</img>
+<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />

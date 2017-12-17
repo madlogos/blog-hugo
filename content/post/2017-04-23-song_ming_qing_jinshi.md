@@ -5,7 +5,7 @@ description: "利用哈佛地理可视化平台、中国历代人物传记数据
 date: 2017-04-23
 lastmod: 2017-04-23
 tags: [进士, 地理分析]
-keyword: [“进士”, “北宋”, “明清”, “空间”, “地理”, “GIS”, “CBDB”]
+keyword: ["进士", "北宋", "明清", "空间", "地理", "GIS", "CBDB"]
 categories: [数据]
 series: ["进士空间分析"]
 isCJKLanguage: true
@@ -531,4 +531,4 @@ for (famName in c(
 
 ----
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%">扫码关注我的的我的公众号</img>
+<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />
