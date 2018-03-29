@@ -10,12 +10,12 @@ categories: [数据]
 series: ["法定传染病"]
 isCJKLanguage: true
 reward: true
-outputs: 
+outputs:
   - html
   - markdown
 ---
 
-# 数据提取
+## 数据提取
 
 现在，可以着手把存储在附件里的信息结构化提取出来了。但在这之前，还有一个硬骨头要啃。
 
@@ -41,7 +41,7 @@ outputs:
 
 > 有读者留言提到，这些数据其实都可以从公共卫生信息网申请到。没错。但是作为数据公开党，我对这种公共数据管制甚至收费牟利的做法非常不屑。这根本不符合如今的时代精神。本文提到的这些结构化数据文档，都已打包存到[七牛云](http://ohghnje4x.bkt.clouddn.com/image/170415/infect_dis_stat.zip)。人人都可以免费用。
 
-## `docxtractr`
+### `docxtractr`
 
 docx和xlsx本质上是一堆xml文件打包到zip里。所以2007以后的MS Office文件都更好处理，解包后按xml语法抽节点信息就是。不过人上有人，懒外有懒。我是不会用XML包做通用解的，敲那么多代码手指不会痛吗？
 
@@ -49,7 +49,7 @@ docx和xlsx本质上是一堆xml文件打包到zip里。所以2007以后的MS Of
 
 我们可用`docxtractr`处理docx，`readxl`处理xlsx，`readr`处理csv。`docxtractr`有个特别贴心的函数`docx_extract_tbl`，直接把word正文里的表格提取成data.frame，就跟`html_table`一样。
 
-## 提取工具函数
+### 提取工具函数
 
 通过前面的苦力活，现在只剩下三种文件形态：csv、xlsx、docx。写一个通用方法来分类提取。
 
@@ -76,11 +76,11 @@ readMsoTbl <- function(mso.file, header=TRUE) {
 然后用`lapply`跑个隐式循环，就把所有表格都以data.frame的形式提出来了，存为一个逼格李斯特(big list)。
 
 ```r
-data <- lapply(list.files("~/infectdis", full.names=TRUE), 
+data <- lapply(list.files("~/infectdis", full.names=TRUE),
                invisible(readMsoTbl))
 ```
 
-# 数据清理
+## 数据清理
 
 这样得到的数据虽然结构化了，但仍有很多问题。
 
@@ -91,7 +91,7 @@ data <- lapply(list.files("~/infectdis", full.names=TRUE),
 
 可以分几步走：重新定义表头，然后舍弃/纠正不规范数值，最后归并同类病名。
 
-## 值规范化
+### 值规范化
 
 构造两个工作函数，然后lapply一轮就能把数值规范化：
 
@@ -119,7 +119,7 @@ cleanTbl <- function(df){
     ## Args
     ##    df: data.frame
     ##    dop: date of publication
-    
+
     # 去掉空列、空行
     is.colallNA <- sapply(df, function(vec){
         all(is.na(vec)) | all(nchar(vec)==0)})
@@ -170,20 +170,20 @@ library(dplyr)
 dat <- do.call("bind_rows", dat)
 ```
 
-## 归并同类
+### 归并同类
 
 首先，定义一个正则转化字典，然后遍历一遍，就把同类病名都归并了。
 
 ```r
 dict <- data.frame(
     pattern=c(
-        "^.*甲乙丙类.*$", "甲乙类传染病小计", 
-        "丙类传染病合计", "([甲乙丙丁戊])肝", "^未分型$|未分型肝炎", 
-        "其他", "人感染H7N9禽流感", "布病", "钩体病", "^.*出血热.*$", 
-        "^.*斑疹伤寒.*$", "伤寒\\+副伤寒"), 
+        "^.*甲乙丙类.*$", "甲乙类传染病小计",
+        "丙类传染病合计", "([甲乙丙丁戊])肝", "^未分型$|未分型肝炎",
+        "其他", "人感染H7N9禽流感", "布病", "钩体病", "^.*出血热.*$",
+        "^.*斑疹伤寒.*$", "伤寒\\+副伤寒"),
     replace=c(
         "合计", "甲乙类传染病合计", "丙类传染病小计", "\\1型肝炎",
-        "肝炎未分型", "其它", "人感染高致病性禽流感", "布鲁氏菌病", 
+        "肝炎未分型", "其它", "人感染高致病性禽流感", "布鲁氏菌病",
         "钩端螺旋体病", "流行性出血热", "流行性和地方性斑疹伤寒",
         "伤寒和副伤寒")
 )
@@ -201,8 +201,8 @@ dat$Class <- NA
 dat$Class[dat$病名 %in% c("霍乱", "鼠疫")] <- "甲类"
 dat$Class[dat$病名 %in% c(
     "病毒性肝炎", "细菌性和阿米巴性痢疾", "伤寒和副伤寒", "艾滋病",
-    "淋病", "梅毒", "脊髓灰质炎", "麻疹", "百日咳", "白喉", 
-    "流行性脑脊髓膜炎", "猩红热", "流行性出血热", "狂犬病", 
+    "淋病", "梅毒", "脊髓灰质炎", "麻疹", "百日咳", "白喉",
+    "流行性脑脊髓膜炎", "猩红热", "流行性出血热", "狂犬病",
     "钩端螺旋体病", "布鲁氏菌病", "炭疽", "流行性乙型脑炎",
     "疟疾", "登革热", "新生儿破伤风", "肺结核", "传染性非典型肺炎",
     "人感染高致病性禽流感", "血吸虫病", "甲型H1N1流感")] <- "乙类"
@@ -214,7 +214,7 @@ names(dat) <- c("病名", "发病数", "死亡数", "日期", "分类")
 dat$分类 <- factor(dat$分类, levels=c("丙类", "乙类", "甲类"))
 ```
 
-# 通用作图函数
+## 通用作图函数
 
 接下来我计划做一系列面积图，简单看看疫情的时间分布有什么有趣之处。但每次整形一遍，再写一堆ggplot命令是很烦人的。我盘算了下，大约要跑十几张图，如果写个通用作图函数增加代码复用性，整体来说还是合算的。
 
@@ -229,17 +229,17 @@ library(ggplot2)
 library(ggthemes)
 makeTsPlot <- function(
     df, title, unit="4 months", xlab=xvar, ylab=yvar,
-    xvar="日期", yvar="value", gvar="分类", 
+    xvar="日期", yvar="value", gvar="分类",
     legend.position=c(0.6, 1.05)
 ){
-    ## Arg:
+    # Arg:
     ##    df: data.frame, source data
     ##    title: plot title
     ##    unit: a num or date_breaks
     ##    xlab, ylab: x-axis y-axis caption
     ##    xvar, yvar, gvar: var name of x, y, group
     ##    legend.position: a value that ggplot2::theme() accepts
-    
+
     if (inherits(df[,xvar], c("POSIXt", "Date"))){
         breaks <- seq(min(df[,xvar]), max(df[,xvar]), unit)
         labels <- format(breaks, "%m\n%y")
@@ -248,7 +248,7 @@ makeTsPlot <- function(
             breaks[!str_detect(labels, paste0("^", min.mon))], "%m")
         labels <- str_replace(labels, "^0", "")
     }else if (is.numeric(df[,xvar])){
-        breaks <- labels <- 
+        breaks <- labels <-
             seq(min(df[,xvar]), max(df[,xvar]), unit)
     }else{
         breaks <- labels <- unique(df[,xvar])
@@ -259,12 +259,12 @@ makeTsPlot <- function(
             length(unique(df[,gvar])) / length(pal)))
     }
     pal <- pal[seq_len(length(unique(df[,gvar])))]
-    p <- ggplot(df, aes(eval(parse(text=xvar)), 
-                   eval(parse(text=yvar)), 
-                   color=eval(parse(text=gvar)), 
+    p <- ggplot(df, aes(eval(parse(text=xvar)),
+                   eval(parse(text=yvar)),
+                   color=eval(parse(text=gvar)),
                    fill=eval(parse(text=gvar)))) +
-        geom_area(alpha=0.25, position="stack") + 
-        theme_hc() + 
+        geom_area(alpha=0.25, position="stack") +
+        theme_hc() +
         scale_fill_manual(
             guide=guide_legend(title=gvar), values=pal) +
         scale_color_manual(
@@ -272,7 +272,7 @@ makeTsPlot <- function(
         theme(axis.ticks=element_line(linetype=0),
               legend.position=legend.position,
               legend.direction="horizontal") +
-        xlab(xlab) + ylab(ylab) 
+        xlab(xlab) + ylab(ylab)
     if (inherits(df[,xvar], c("POSIXt", "Date"))) {
         p <- p + scale_x_date(breaks=breaks, labels=labels) +
             labs(title=title, subtitle=paste(
@@ -296,4 +296,4 @@ makeTsPlot <- function(
 
 ----
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}

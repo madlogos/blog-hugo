@@ -10,12 +10,12 @@ series: ["法定传染病"]
 categories: [数据]
 isCJKLanguage: true
 reward: true
-outputs: 
+outputs:
   - html
   - markdown
 ---
 
-# 带怀旧色彩的源起
+## 带怀旧色彩的源起
 
 清明节跑去一个休闲浴场~~鬼混~~，在电影厅懒散地看掉了《生化危机6》。场地很豪华（但我就是不透露门牌地址），然而剧情不怎么样——女主光环实在太亮了。倒是病毒-丧尸-疫苗的急性传染病建模设定引起了我的一些职业回忆。
 
@@ -23,13 +23,13 @@ outputs:
 
 说是大海，视觉上其实就是类似这样的一张表格：
 
-![法定传染病统计表](http://ohghnje4x.bkt.clouddn.com/image/170404/example_infectdis_report.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170404/example_infectdis_report.png" title="图|法定传染病统计表" width="60%" %}}
 
 一晃很多年过去了。籍着这个由头，我又登上了卫生部（现在叫卫计委了，早晚改回卫生部）的官网，那感觉就像——拜会一个久寓故居，新近敲了墙、刷了房门的老派的朋友。那些月报还原封不动，化石一样静静地躺在信息动态里。
 
-![传染病控制动态](http://ohghnje4x.bkt.clouddn.com/image/170404/nhfpc_infectdis_news.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170404/nhfpc_infectdis_news.png" title="图|卫计委传染病控制动态" %}}
 
-![法定传染病月报](http://ohghnje4x.bkt.clouddn.com/image/170404/example_infectdis_reporttxt.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170404/example_infectdis_reporttxt.png" title="图|法定传染病月报" %}}
 
 这种格式报告，行文和结构都很固定，特别适合用机器人来自动生成。比如最新这期，正文就包括了发病、死亡合计总数，以及甲乙丙类各自的发病、死亡数。明细数据放在附表里。掐指一数，从2004年到现在，卫计委也积攒了140多份月报，不少了。何不爬下来看看？
 
@@ -37,7 +37,7 @@ outputs:
 
 <!--more-->
 
-# 搬砖设想
+## 搬砖设想
 
 搬砖虽然是个贱活儿，但也要讲技巧。好在从技术角度，爬这些页面是再简单不过的事。只需要两步就完了：
 
@@ -53,17 +53,17 @@ outputs:
 
 Easy as a pie！等我一盏茶的功夫，我去去就来。（结果茶馊了都没能回来）
 
-# 爬目录
+## 爬目录
 
 “传染病预防控制”这个分类的URL是很有规律的。第一页是http://www.nhfpc.gov.cn/jkj/s2907/new_list.shtml，第二页就是http://www.nhfpc.gov.cn/jkj/s2907/new_list_2.shtml。也就是说23个目录页拼一下就出来了：
 
 ```r
 urls <- paste0(
-    "http://www.nhfpc.gov.cn/jkj/s2907/new_list", 
+    "http://www.nhfpc.gov.cn/jkj/s2907/new_list",
     c("", paste0("_", 2:23)), ".shtml")
 ```
 
-## `rvest`
+### `rvest`
 
 有了URL，就可以爬源码了。当然可以把网页当文本，直接`readLines`，然后拿`XML`包写解析规则。但我们学R图什么？还不就是**免费+有很多包方便偷懒**？对于静态网页，当然毫不犹豫`rvest`。
 
@@ -93,7 +93,7 @@ urls <- paste0(
 
 每一篇信息动态都在一个列表节点<li>里，最终都被包进一个无序列表父节点<ul>里。这个无序列表元素的类型是“zxxx_list”（果然还是万能的拼音首字母命名法，“资讯信息”）。所以拿到这个节点后，提取目录信息就很简单了：<a>节点内有标题和链接，<span ml>节点内有发布日期。
 
-![网页源码](http://ohghnje4x.bkt.clouddn.com/image/170404/sourcecode_dir.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170404/sourcecode_dir.png" title="图|网页源码" %}}
 
 ```r
 library(rvest)
@@ -159,11 +159,11 @@ toc$date <- as.Date(toc$date)
 
 `toc`数据集长这样：
 
-![toc表格](http://ohghnje4x.bkt.clouddn.com/image/170404/toc_tbl.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170404/toc_tbl.png" title="图|toc表格" %}}
 
 万里长征踏出了第一步。
 
-# 爬网页
+## 爬网页
 
 这一步就比较简单了，干脆就先把网页代码先弄下来。在这里就不多考虑反爬虫问题了（因为试下来卫计委官网好像没有反爬虫机制，再说才爬它一百多个页面，有啥好反的）。电脑虽然配置不济，好歹有4个核。为了加点速，充分利用CPU（R默认只用单核）算力，不妨拿`doParallel`包做点并行计算处理。
 
@@ -178,7 +178,7 @@ getWebPage <- function(url){
 # 并行计算
 library(doParallel)
 registerDoParallel(cores=parallel::detectCores())
-pages <- foreach(i=seq_along(toc$href), .combine=c) %dopar% 
+pages <- foreach(i=seq_along(toc$href), .combine=c) %dopar%
 	invisible(getWebPage(toc$href[i]))
 names(pages) <- as.character(toc$date)
 ```
@@ -194,7 +194,7 @@ str(pages)
  - attr(*, "names")= chr [1:149] "2017-02-01" "2017-01-01" "2016-12-01" "2016-11-01" ...
 ```
 
-# 解析发病和死亡总数
+## 解析发病和死亡总数
 
 第二个大坑正在缓缓靠近：不是所有月报都有发病和死亡总数。
 
@@ -236,7 +236,7 @@ getKeyNums <- function(page){
     ## 乙类死亡总数
     mot.b <- as.integer(str_replace(
         txt, regex(
-            ".+?乙类.+?死亡\\D*?(\\d+)[例人].+", dotall=TRUE), 
+            ".+?乙类.+?死亡\\D*?(\\d+)[例人].+", dotall=TRUE),
         "\\1"))
     ## 丙类发病总数
     inc.c <- as.integer(str_replace(
@@ -275,7 +275,7 @@ library(ggplot2)
 library(ggthemes)
 ggplot(genl.stat) + geom_line(aes(Date, value, color=variable)) + theme_hc() +
     scale_color_hc() + scale_x_date(date_breaks="1 year", date_labels="%Y") +
-    facet_grid(variable~., scales="free") + 
+    facet_grid(variable~., scales="free") +
     theme(axis.ticks=element_line(linetype=0)) +
     labs(title="Incidence And Mortality of Notifiable Infectious Diseases",
         subtitle="2005/1-2017/2", caption="source: NHFPC")
@@ -283,9 +283,9 @@ ggplot(genl.stat) + geom_line(aes(Date, value, color=variable)) + theme_hc() +
 
 年周期性还是很显著的。
 
-![发病/死亡月度统计](http://ohghnje4x.bkt.clouddn.com/image/170404/inc_mot_infectdis.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170404/inc_mot_infectdis.png" title="图|发病/死亡月度统计" %}}
 
-# 抽取各明细病种数据
+## 抽取各明细病种数据
 
 接下来进行明细分病种数据的爬取。
 
@@ -308,7 +308,7 @@ getWebTbl <- function(url, tbl.name){
 
     # 如附表文件已存在，跳出
     if (any(file.exists(
-        paste0("~/infectdis/", tbl.name, ".", 
+        paste0("~/infectdis/", tbl.name, ".",
                c("xls", "csv", "doc", "gif", "jpg", "png"))))){
         return(invisible())
     }
@@ -333,7 +333,7 @@ getWebTbl <- function(url, tbl.name){
         idx.attach <- which(str_detect(
             cast.attach, paste0("\\.", regex.attach, "\"")))[1]
         doc.link <- str_replace(
-            cast.attach[idx.attach], 
+            cast.attach[idx.attach],
             paste0(".+href=\"(.+?\\.)", regex.attach, "\".+"), "\\1\\2")
         file.type <- tolower(str_replace(
             doc.link, paste0(".+\\.", regex.attach, "$"), "\\1"))
@@ -359,7 +359,7 @@ getWebTbl <- function(url, tbl.name){
         idx.img <- which(str_detect(
             cast.img, paste0("\\.", regex.img, "\"")))[1]
         doc.link <- str_replace(
-            cast.img[idx.img], 
+            cast.img[idx.img],
             paste0(".+img.+src=\"(.+?\\.)", regex.img, "\".+"), "\\1\\2")
         file.type <- tolower(str_replace(
             doc.link, paste0(".+\\.", regex.img, "$"), "\\1"))
@@ -383,13 +383,13 @@ getWebTbl <- function(url, tbl.name){
 }
 # 再次动用并行计算
 registerDoParallel(cores=parallel::detectCores())
-foreach(i=seq_along(toc$href)) %dopar% 
+foreach(i=seq_along(toc$href)) %dopar%
     invisible(getWebTbl(toc$href[i], as.character(toc$date[i])))
 ```
 
 看到这些文件齐齐整整码在硬盘里，心下暂时宽慰了一点。
 
-![附件下载](http://ohghnje4x.bkt.clouddn.com/image/170404/downfiles.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170404/downfiles.png" title="图|附件下载" %}}
 
 然而让我们回头看看疫情月报附表们可恨的多样性吧。
 
@@ -399,7 +399,7 @@ table(str_replace(
 ```
 
 ```r
-csv doc gif jpg png xls 
+csv doc gif jpg png xls
  67  51  21   4   1   2
 ```
 
@@ -411,4 +411,4 @@ csv doc gif jpg png xls
 
 ----
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}

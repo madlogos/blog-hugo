@@ -6,16 +6,16 @@ date: 2017-04-16
 lastmod: 2017-04-16
 tags: [传染病, 疫情报告, rvest]
 keywords: ["法定传染病", "疫情报告", "爬虫"]
-categories: [数据] 
+categories: [数据]
 series: ["法定传染病"]
 isCJKLanguage: true
 reward: true
-outputs: 
+outputs:
   - html
   - markdown
 ---
 
-# 甲乙丙类每月发病、死亡数
+## 甲乙丙类每月发病、死亡数
 
 ```r
 library(data.table)
@@ -65,9 +65,9 @@ makeTsPlot(sta, "法定传染病平均月死亡数", unit=1, ylab="平均例数"
 
 <!--more-->
 
-# 乙类
+## 乙类
 
-## 四大类别
+### 四大类别
 
 把乙类归成肠道、呼吸道、血源/性、虫媒/自然疫源地四大类。
 
@@ -103,7 +103,7 @@ makeTsPlot(sta, "乙类传染病每月死亡数", xlab="年月", ylab="例数", 
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170415/mot_b_trend.png)
 
-## 详细病种
+### 详细病种
 
 究竟是哪个具体病种发展更快？
 
@@ -147,7 +147,7 @@ makeTsPlot(sta, "乙类传染病每月死亡数", xlab="年月", ylab="例数", 
 
 
 
-## 肝炎
+### 肝炎
 
 肝炎是细分报告的。所以也可以下钻看一眼。
 
@@ -179,7 +179,7 @@ makeTsPlot(sta, "肝炎每月死亡数", xlab="年月", ylab="例数", gvar="型
 
 感觉都在慢慢下降。
 
-# 丙类
+## 丙类
 
 析出一个子集。
 
@@ -187,7 +187,7 @@ makeTsPlot(sta, "肝炎每月死亡数", xlab="年月", ylab="例数", gvar="型
 dat.c <- subset(dat, 分类=="丙类" & 日期 >= as.Date("2009-1-1"))
 ```
 
-## 不同病种的时间趋势
+### 不同病种的时间趋势
 
 ```r
 sta <- dcast(dat.c, 日期 ~ 病名, sum, value.var="发病数")
@@ -211,7 +211,7 @@ makeTsPlot(sta, "丙类传染病每月死亡数", xlab="年月", ylab="例数", 
 
 丙类传染病占据了基层疾控主要的流调精力，但其实能死人的也就是手足口。
 
-## 各病种的平均月分布
+### 各病种的平均月分布
 
 ```r
 sta <- dcast(dat.c, format(日期, "%m") ~ 病名, mean, value.var="发病数")
@@ -237,7 +237,7 @@ makeTsPlot(sta, "丙类传染病平均月死亡数", unit=1, ylab="平均例数"
 
 看月份分布，春夏季是大头。
 
-## 流感
+### 流感
 
 额外关心了一下流感。
 
@@ -251,7 +251,7 @@ makeTsPlot(dat.flu, "流感每月发病数", xlab="年月", ylab="例数", gvar=
 
 2016年初春有一个高峰。今明两年估计不会有那么高了。
 
-# 结尾
+## 结尾
 
 上面这些是很粗浅的分析。用shiny结合这些数据做一个仪表盘是再合适不过的了。配点时间序列模型和预测，整个仪表盘就很丰富实用了。可惜印象中并没有这类公共的数据产品出来。可能也有，但多半藏在某些衙门的某些电脑上离线运行着。
 
@@ -261,4 +261,4 @@ makeTsPlot(dat.flu, "流感每月发病数", xlab="年月", ylab="例数", gvar=
 
 ----
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}

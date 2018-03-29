@@ -21,7 +21,7 @@ outputs:
 
 炒个什么蛋炒饭呢？——动态图(dynamic charts)。这也是应留言要求额外发的番外。基本和分析关系不大，纯粹是可视化范畴。
 
-# 动态图
+### 动态图
 
 通常我们看到的都是静态图，最常见的是.jpg、.png这类位图，逼格高一点的会用到.svg矢量图。但它们都是死图，所有图形元素都不会动。某些情况下，我们不仅要把统计结果映射到特定的视觉通道，还希望表现其历时性，或者允许用户自己进行挖掘。这就需要让图形部件动起来。
 
@@ -37,7 +37,7 @@ R有个名包，叫animation，可以用它压制.gif，用在社交媒体效果
 
 <!--more-->
 
-# 动画
+### 动画
 
 还是用前次的数据集，再画一下各朝的进士地理热图。但这次变个花样，我们先把北宋、明、清都按前、中、后分一下期。
 
@@ -70,7 +70,7 @@ qing.js$period <- cut(
 oopt <- ani.options(interval=2, ani.width=640, ani.height=480)
 saveGIF({
     for (i in levels(nsong.js$period)){
-        print(p.song + stat_density_2d(aes(x_coord, y_coord, fill=..level..), 
+        print(p.song + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
         data=nsong.js[nsong.js$period==i,], geom="polygon", alpha=0.5) +
         scale_fill_gradient(low="cyan", high="darkblue")+
         ggtitle(paste0("北宋进士来源地 (", i, ")")))
@@ -85,7 +85,7 @@ saveGIF({
 ```r
 saveGIF({
     for (i in levels(ming.js$period)){
-        print(p.ming + stat_density_2d(aes(x_coord, y_coord, fill=..level..), 
+        print(p.ming + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
         data=ming.js[ming.js$period==i,], geom="polygon", alpha=0.5) +
         scale_fill_gradient(low="cyan", high="darkblue")+
         ggtitle(paste0("明朝进士来源地 (", i, ")")))
@@ -100,7 +100,7 @@ saveGIF({
 ```r
 saveGIF({
     for (i in levels(qing.js$period)){
-        print(p.qing + stat_density_2d(aes(x_coord, y_coord, fill=..level..), 
+        print(p.qing + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
         data=qing.js[qing.js$period==i,], geom="polygon", alpha=0.5) +
         scale_fill_gradient(low="cyan", high="darkblue")+
         ggtitle(paste0("清朝进士来源地 (", i, ")")))
@@ -115,9 +115,9 @@ ani.options(oopt)
 
 和静态图相比，引入历时维度后，信息量明显就更大了。
 
-# 交互图
+### 交互图
 
-## 个体散点图
+#### 个体散点图
 
 在哈佛人文地理平台上，进士数据集本身就以散点和热力图形式展示。这有一个问题：同一个来源地的坐标是完全一样的，所以这些个体在空间上都叠在一起，无法区分。在用leaflet再现散点分布之前，我们用随机数把他们打散开。
 
@@ -146,18 +146,18 @@ make_leaflet <- function(refMap, dyn, bgColor="red", dataset, cutyears){
     dataset <- dataset[order(dataset$period),]
     g <- leaflet() %>% addProviderTiles(providers$OpenStreetMap)
     for (i in unique(refMap$id)){
-        g <- g %>% 
-            addPolygons(~long, ~lat, data=refMap[refMap$id==i,], 
+        g <- g %>%
+            addPolygons(~long, ~lat, data=refMap[refMap$id==i,],
 		        label=dyn, labelOptions=labelOptions(textsize="20px"),
 		        weight=1, fillColor=bgColor, color=bgColor)
     }
     pal <- colorFactor(
-        viridis::plasma(2*nlevels(dataset$period)), 
+        viridis::plasma(2*nlevels(dataset$period)),
         levels=levels(dataset$period), ordered=TRUE)
     g <- g %>% addCircleMarkers(
-        ~long, ~lat, data=dataset, radius=2, 
+        ~long, ~lat, data=dataset, radius=2,
         label=paste(dataset$NameChn, dataset$Name),
-		popup=paste(dataset$EntryYear, "<br>", dataset$Prov, 
+		popup=paste(dataset$EntryYear, "<br>", dataset$Prov,
 		            dataset$AddrChn, dataset$AddrName, sep=" "),
 		color=~pal(period), group=~period)
     g %>% addLayersControl(
@@ -193,7 +193,7 @@ make_leaflet(qing.bou, "清朝", "black", qing.js, c(1644, 1735, 1850, 1911))
 
 [点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/qing.html)
 
-## 古今地名一致性
+#### 古今地名一致性
 
 前次分析，直接把所有县级地名拿出来跑频数，第一名是莆田。这当然很不精准——地名一直会变嘛。像南京这种历史上频繁改名的地方，就会吃很大亏。最好统一起来。找地名的历史沿革数据库不是很容易，干脆统一到今名如何？（请都说“好”）
 
@@ -213,11 +213,11 @@ make_leaflet(qing.bou, "清朝", "black", qing.js, c(1644, 1735, 1850, 1911))
 which_polygon <- function(point, cn.cities, tw.cities){
     library(sp)
     out <- over(SpatialPoints(
-        matrix(point, nrow=1), 
+        matrix(point, nrow=1),
         proj4string = cn.cities@proj4string), cn.cities)
     if (is.na(out$ID_0))
         out <- over(SpatialPoints(
-            matrix(point, nrow=1), 
+            matrix(point, nrow=1),
             proj4string = tw.cities@proj4string), tw.cities)
     return(out)
 }
@@ -237,11 +237,11 @@ qing.js.stat <- dcast(qing.js, x_coord+y_coord~., length)
 ```r
 library(parallel)
 cl <- makeCluster(getOption("cl.cores", 2))
-nsong.js.belong <- parApply(cl, nsong.js.stat[,c("x_coord", "y_coord")], 
+nsong.js.belong <- parApply(cl, nsong.js.stat[,c("x_coord", "y_coord")],
                             1, which_polygon, cn.cities, tw.cities)
-ming.js.belong <- parApply(cl, ming.js.stat[,c("x_coord", "y_coord")], 
+ming.js.belong <- parApply(cl, ming.js.stat[,c("x_coord", "y_coord")],
                            1, which_polygon, cn.cities, tw.cities)
-qing.js.belong <- parApply(cl, qing.js.stat[,c("x_coord", "y_coord")], 
+qing.js.belong <- parApply(cl, qing.js.stat[,c("x_coord", "y_coord")],
                            1, which_polygon, cn.cities, tw.cities)
 stopCluster(cl)
 library(dplyr)
@@ -253,7 +253,7 @@ ming.js.belong$num <- ming.js.stat$`.`
 qing.js.belong$num <- qing.js.stat$`.`
 ```
 
-## 进士数排名
+#### 进士数排名
 
 把三个朝代的数据集做一下深加工，合并到一起（DYNASTY列标识朝代属性）。
 
@@ -278,10 +278,10 @@ js.belong$.[js.belong$.==0] <- NA
 
 排名来了。
 
-### 先是市级排名
+##### 先是市级排名
 
 ```r
-js.order <- dcast(js.belong, NAME_1+NAME_2+NL_NAME_2~DYNASTY, sum, 
+js.order <- dcast(js.belong, NAME_1+NAME_2+NL_NAME_2~DYNASTY, sum,
                   value.var=".", margins="DYNASTY")
 knitr::kable(js.order[order(js.order$`(all)`, decreasing=TRUE),])
 ```
@@ -312,7 +312,7 @@ knitr::kable(js.order[order(js.order$`(all)`, decreasing=TRUE),])
 
 [点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/city.html)
 
-### 然后是省级排名
+##### 然后是省级排名
 
 ```r
 js.order.prov <- dcast(js.belong, NAME_1~DYNASTY, sum, value.var=".", margins="DYNASTY")
@@ -359,7 +359,7 @@ js.order.ec <- melt(js.order.prov[,c(2:4,6)], id="CN")
 js.order.ec$value[js.order.ec$value==0] <- NA
 echartR(js.order.ec, CN, value, t=variable, type="map_china", subtype="average") %>%
     setDataRange(splitNumber=0, color=c('darkblue','cyan')) %>%
-    setTitle("各省进士数", pos=11) %>% 
+    setTitle("各省进士数", pos=11) %>%
     setTimeline(autoPlay=TRUE) %>% setLegend(FALSE)
 ```
 
@@ -375,4 +375,4 @@ echartR(js.order.ec, CN, value, t=variable, type="map_china", subtype="average")
 
 ----
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}

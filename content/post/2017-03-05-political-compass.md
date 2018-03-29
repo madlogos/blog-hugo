@@ -10,14 +10,14 @@ series: ["政治坐标"]
 categories: ["数据"]
 isCJKLanguage: true
 reward: true
-outputs: 
+outputs:
   - html
   - markdown
 ---
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170305/left_right_wing_us.jpg)
 
-# 回味2016
+## 回味2016
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170305/2015113154244635.png)
 
@@ -33,7 +33,7 @@ outputs:
 
 <!--more-->
 
-# 我们的社会共识到底是什么？
+## 我们的社会共识到底是什么？
 
 这个问题不太好回答。在美国社会，核心的议题可能是税收、种族、最低工资、医保、LGBT权利、堕胎、持枪。而中国社会的公开核心议题是就业、房价、环境，不公开的核心问题是如何评价历史遗留问题。在很多问题上，一个复杂社会非但不能形成稳定共识，相反，会有严重的分歧和激烈的交锋。这是有益的：共识的凝聚无不是经过充分的探讨而来。
 
@@ -45,7 +45,7 @@ outputs:
 
 未名调查的作者把2014年的[17万条数据](http://zuobiao.me/resources/)公布了出来，这提供了一个不可多得的有趣样本。
 
-# 我们来看一看
+## 我们来看一看
 
 打开R。先载入程序包和数据。
 
@@ -89,14 +89,14 @@ meta$Type <- c(
     1, -1, -1, -1, 1, -1, -1, -1, -1, 1  # 44 - 53
     )
 qn <- c(
-    "普选权", "人权与主权", "信息公开", "多党制", "言论自由", "自主招生", 
-    "公开传教", "统一军训", "领土完整优先", "司法程序正义", "对外援助", 
-    "丑化领袖", "人民自决", "媒体代言", "国家唯利", "武统台湾", "律师辩护", 
-    "双重国籍", "西方有敌意", "运动举国体制", "最低工资", "改革成果分配", 
-    "集体利益优先", "个人自由", "价格干预", "关税保护", "教育公立", "国企意义", 
-    "控制房市价格", "补贴穷人", "富人优先服务", "富人公示财源", "劳资要素地位", 
-    "国企私有化", "命脉国企", "资本原罪", "地权民有", "农业补贴", "外资待遇", 
-    "市场垄断", "性自由", "为尊者讳", "重新尊儒", "艺术评判", "生育自由", 
+    "普选权", "人权与主权", "信息公开", "多党制", "言论自由", "自主招生",
+    "公开传教", "统一军训", "领土完整优先", "司法程序正义", "对外援助",
+    "丑化领袖", "人民自决", "媒体代言", "国家唯利", "武统台湾", "律师辩护",
+    "双重国籍", "西方有敌意", "运动举国体制", "最低工资", "改革成果分配",
+    "集体利益优先", "个人自由", "价格干预", "关税保护", "教育公立", "国企意义",
+    "控制房市价格", "补贴穷人", "富人优先服务", "富人公示财源", "劳资要素地位",
+    "国企私有化", "命脉国企", "资本原罪", "地权民有", "农业补贴", "外资待遇",
+    "市场垄断", "性自由", "为尊者讳", "重新尊儒", "艺术评判", "生育自由",
     "周易八卦", "中医药", "汉字简化", "国学启蒙", "同性恋")
 names(qn) <- 1:50
 meta$Qn <- qn
@@ -160,13 +160,13 @@ knitr::kable(meta)
 | 如果是出于自愿，我会认可我的孩子和同性结成伴侣关系。                               | 文化  |   1 | 同性恋       |
 
 
-## 人口学代表性？
+### 人口学代表性？
 
 讲真，不怎么样。大多数都是30岁以下的小年轻，大学生和研究生比例特别高，低收入比例近一半。这只能说明一点：参与的主力军是在校大学生。而这个群体只占中国居民的10%都不到。
 
 
 ```r
-calc <- dcast(data.table(dt), X1 ~ as.numeric(variable), mean, 
+calc <- dcast(data.table(dt), X1 ~ as.numeric(variable), mean,
               value.var = "Value", na.rm = TRUE)
 calc$`文化` <- rowMeans(calc[, 42:51])
 calc$`经济` <- rowMeans(calc[, 22:41])
@@ -189,7 +189,7 @@ theme_new <- function(){
           panel.grid.major.y = element_line(size = 0.2))
 }
 
-ggplot(age.gender, aes(年龄组, 比重, group=性别)) + 
+ggplot(age.gender, aes(年龄组, 比重, group=性别)) +
     geom_bar(aes(fill=性别), stat="identity", position="stack") +
     scale_y_continuous(breaks = c(-0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2),
                        labels=paste0(c(40, 30, 20, 10, 0, 10, 20), "%")) +
@@ -206,7 +206,7 @@ educ$比重 <- educ$. / sum(educ$.)
 educ$学历 <- factor(educ$学历, levels=c(
     "初中及以下", "高中", "大学", "研究生及以上"))
 educ <- educ[order(educ$学历),]
-ggplot(educ, aes("", 比重, fill=学历)) + 
+ggplot(educ, aes("", 比重, fill=学历)) +
     geom_bar(stat="identity", position="stack", width=1, color="white") +
     geom_label(aes(x=1.75, y=1-cumsum(比重)+比重/2, label=scales::percent(比重))) +
     coord_polar(theta="y") + scale_y_continuous(labels=scales::percent) +
@@ -224,7 +224,7 @@ incm$年收入 <- factor(incm$年收入, levels=c(
     "300k+"))
 incm$比重 <- incm$. / sum(incm$.)
 incm <- incm[order(incm$年收入),]
-ggplot(incm, aes("", 比重, fill=年收入)) + 
+ggplot(incm, aes("", 比重, fill=年收入)) +
     geom_bar(stat="identity", position="stack", width=1, color="white") +
     geom_label(aes(x=1.75, y=1-cumsum(比重)+比重/2, label=scales::percent(比重))) +
     coord_polar(theta="y") + scale_y_continuous(labels=scales::percent) +
@@ -235,7 +235,7 @@ ggplot(incm, aes("", 比重, fill=年收入)) +
 
 可以猜测，这个群体会比普通中国人文化上更偏右一点，但政治和经济立场却未必。
 
-## 三个维度上的得分分布？
+### 三个维度上的得分分布？
 
 还是比较正态的。政治几乎不偏不倚，经济和文化都轻微偏左。网上其他一些对此数据集的分析认为结果偏左，实际不然。
 
@@ -286,15 +286,15 @@ ggplot() + theme_hc() + ggtitle("文化倾向均分") +
 
 ```r
 summ <- merge(dcast(dt, as.numeric(variable) + Qn ~ ., c(mean, sd),
-                    value.var = "Value", na.rm=TRUE), 
+                    value.var = "Value", na.rm=TRUE),
               meta, by = "Qn")
 setorder(summ, variable.x)
 summ <- summ[,c(1, 2, 3, 4, 6)]
 names(summ) <- c("话题", "i", "均值", "标准差", "分类")
 setorder(summ, 分类, -均值)
 summ$话题 <- factor(summ$话题, levels=summ$话题)
-ggplot() + geom_point(aes(话题, 均值, color = 分类), data = summ) + 
-    geom_errorbar(aes(ymin = 均值-标准差, ymax = 均值+标准差, x = 话题), 
+ggplot() + geom_point(aes(话题, 均值, color = 分类), data = summ) +
+    geom_errorbar(aes(ymin = 均值-标准差, ymax = 均值+标准差, x = 话题),
                   data = summ, color = "darkgray") +
     ggtitle("各问题均分及标准差") + geom_hline(yintercept=0, color = "darkgray") +
     coord_flip() + theme_hc() + theme_new()
@@ -302,7 +302,7 @@ ggplot() + geom_point(aes(话题, 均值, color = 分类), data = summ) +
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170305/Rplot08.png)
 
-## 三个维度的关联？
+### 三个维度的关联？
 
 关联很紧密，政治、文化、经济是正相关的。从下面这个图可以发现，男性的倾向性打分平均而言比女性更极端（偏离零点）。这17万个散点在三维空间里形成一个完美正态的橄榄球。
 
@@ -311,7 +311,7 @@ ggplot() + geom_point(aes(话题, 均值, color = 分类), data = summ) +
 p3d.lm <- with(data, lm(政治 ~ 文化 + 经济))
 p3d <- with(data, scatterplot3d(
     文化, 经济, 政治, pch='', highlight.3d = FALSE, angle=120, type='h',
-    main = paste("政治 =", round(p3d.lm$coefficients[2], 2), "* 文化 +", 
+    main = paste("政治 =", round(p3d.lm$coefficients[2], 2), "* 文化 +",
                  round(p3d.lm$coefficients[3], 2), "* 经济 +",
                  round(p3d.lm$coefficients[1], 2)), color = "gray95",
     col.axis="gray"))
@@ -338,7 +338,7 @@ plot(hclust(dist(cor)), sub="", xlab="", cex=0.6)
 
 ![](http://ohghnje4x.bkt.clouddn.com/image/170305/Rplot14.png)
 
-## 不同人群的意见
+### 不同人群的意见
 
 进一步看。把学历、性别、年收入、年龄段四个人口学变量分别拿出来比较。
 
@@ -351,7 +351,7 @@ plot(hclust(dist(cor)), sub="", xlab="", cex=0.6)
 
 ```r
 summ <- lapply(c("性别", "年龄段", "年收入", "学历"), function(var){
-    d = dcast(dt, as.formula(paste("Class +", var, "~.")), 
+    d = dcast(dt, as.formula(paste("Class +", var, "~.")),
                              mean, value.var='Value', na.rm=TRUE)
     d$Attr = var
     names(d) = c("Class", "Level", "Mean", "Attr")
@@ -362,17 +362,17 @@ summ <- summ[!is.na(summ$Level) & summ$Level != "NULL",]
 names(summ) <- c("分类", "水平", "均值", "标签")
 summ$水平 <- factor(summ$水平, levels=c(
     "M", "F", "(0,20]", "(20,25]", "(25,30]", "(30,35]", "(35,40]",
-    "(40,45]", "(45,99]", "0-25k", "25k-50k", "50k-75k", "75k-100k", 
-    "100k-150k", "150k-300k", "300k+", "初中及以下", "高中", "大学", 
+    "(40,45]", "(45,99]", "0-25k", "25k-50k", "50k-75k", "75k-100k",
+    "100k-150k", "150k-300k", "300k+", "初中及以下", "高中", "大学",
     "研究生及以上"))
-cols <- c(scales::hue_pal()(2), brewer.pal(7, "Oranges"), 
+cols <- c(scales::hue_pal()(2), brewer.pal(7, "Oranges"),
           brewer.pal(7, "Greens"), brewer.pal(4, "Blues"))
 names(cols) <- c(
     "M", "F", "(0,20]", "(20,25]", "(25,30]", "(30,35]", "(35,40]",
-    "(40,45]", "(45,99]", "0-25k", "25k-50k", "50k-75k", "75k-100k", 
-    "100k-150k", "150k-300k", "300k+", "初中及以下", "高中", "大学", 
+    "(40,45]", "(45,99]", "0-25k", "25k-50k", "50k-75k", "75k-100k",
+    "100k-150k", "150k-300k", "300k+", "初中及以下", "高中", "大学",
     "研究生及以上")
-ggplot() + geom_point(aes(标签, 均值, color = 水平), data = summ) + 
+ggplot() + geom_point(aes(标签, 均值, color = 水平), data = summ) +
     ggtitle("分类均分比较") + geom_hline(yintercept=0, color = "darkgray") +
     facet_grid(.~分类) + scale_color_manual(values=cols) +
     coord_flip() + theme_hc() + theme_new()
@@ -389,7 +389,7 @@ ggplot() + geom_point(aes(标签, 均值, color = 水平), data = summ) +
 
 ```r
 summ <- merge(dcast(dt, as.numeric(variable) + Qn + 年收入 ~ ., c(mean, sd),
-                    value.var = "Value", na.rm=TRUE), 
+                    value.var = "Value", na.rm=TRUE),
               meta, by = "Qn")
 setorder(summ, variable.x)
 summ <- summ[summ$年收入 %in% c(
@@ -401,9 +401,9 @@ summ$话题 <- factor(summ$话题, levels=unique(summ$话题))
 summ$年收入 <- factor(summ$年收入, levels=c(
     "0-25k", "25k-50k", "50k-75k", "75k-100k", "100k-150k", "150k-300k",
     "300k+"))
-ggplot() + geom_point(aes(话题, 均值, color = 年收入), data = summ) + 
+ggplot() + geom_point(aes(话题, 均值, color = 年收入), data = summ) +
     ggtitle("不同收入组各问题均分") + geom_hline(yintercept=0, color = "darkgray") +
-    geom_vline(xintercept=c(20.5, 30.5), color="darkgray") + 
+    geom_vline(xintercept=c(20.5, 30.5), color="darkgray") +
     scale_color_brewer(type="seq", palette = "Blues") +
     coord_flip() + theme_hc() + theme_new()
 ```
@@ -417,7 +417,7 @@ ggplot() + geom_point(aes(话题, 均值, color = 年收入), data = summ) +
 
 ```r
 summ <- merge(dcast(dt, as.numeric(variable) + Qn + 学历 ~ ., c(mean, sd),
-                    value.var = "Value", na.rm=TRUE), 
+                    value.var = "Value", na.rm=TRUE),
               meta, by = "Qn")
 setorder(summ, variable.x)
 summ <- summ[summ$学历 %in% c(
@@ -427,9 +427,9 @@ setorder(summ, 分类, -均值)
 summ$话题 <- factor(summ$话题, levels=unique(summ$话题))
 summ$学历 <- factor(summ$学历, levels=c(
     "初中及以下", "高中", "大学", "研究生及以上"))
-ggplot() + geom_point(aes(话题, 均值, color = 学历), data = summ) + 
+ggplot() + geom_point(aes(话题, 均值, color = 学历), data = summ) +
     ggtitle("不同学历各问题均分") + geom_hline(yintercept=0, color = "darkgray") +
-    geom_vline(xintercept=c(20.5, 30.5), color="darkgray") + 
+    geom_vline(xintercept=c(20.5, 30.5), color="darkgray") +
     scale_color_brewer(type="seq", palette = 'Greens') +
     coord_flip() + theme_hc() + theme_new()
 ```
@@ -443,7 +443,7 @@ ggplot() + geom_point(aes(话题, 均值, color = 学历), data = summ) +
 
 ```r
 summ <- merge(dcast(dt, as.numeric(variable) + Qn + 年龄段 ~ ., c(mean, sd),
-                    value.var = "Value", na.rm=TRUE), 
+                    value.var = "Value", na.rm=TRUE),
               meta, by = "Qn")
 setorder(summ, variable.x)
 summ <- summ[summ$年龄段 %in% c(
@@ -454,9 +454,9 @@ setorder(summ, 分类, -均值)
 summ$话题 <- factor(summ$话题, levels=unique(summ$话题))
 summ$年龄段 <- factor(summ$年龄段, levels=c(
     "(0,20]", "(20,25]", "(25,30]", "(30,35]", "(35,40]", "(40,45]", "(45,99]"))
-ggplot() + geom_point(aes(话题, 均值, color = 年龄段), data = summ) + 
+ggplot() + geom_point(aes(话题, 均值, color = 年龄段), data = summ) +
     ggtitle("不同年龄段各问题均分") + geom_hline(yintercept=0, color = "darkgray") +
-    geom_vline(xintercept=c(20.5, 30.5), color="darkgray") + 
+    geom_vline(xintercept=c(20.5, 30.5), color="darkgray") +
     scale_color_brewer(type="seq", palette = "Oranges") +
     coord_flip() + theme_hc() + theme_new()
 ```
@@ -472,7 +472,7 @@ ggplot() + geom_point(aes(话题, 均值, color = 年龄段), data = summ) +
 
 ```r
 summ <- merge(dcast(dt, as.numeric(variable) + Qn + 性别 ~ ., c(mean, sd),
-                    value.var = "Value", na.rm=TRUE), 
+                    value.var = "Value", na.rm=TRUE),
               meta, by = "Qn")
 setorder(summ, variable.x)
 summ <- summ[summ$性别 %in% c("M", "F"), c(1:5, 7)]
@@ -480,7 +480,7 @@ names(summ) <- c("话题", "i", "性别", "均值", "标准差", "分类")
 setorder(summ, 分类, -均值)
 summ$话题 <- factor(summ$话题, levels=unique(summ$话题))
 summ$性别 <- factor(summ$性别, levels=c("M", "F"))
-ggplot() + geom_point(aes(话题, 均值, color = 性别), data = summ) + 
+ggplot() + geom_point(aes(话题, 均值, color = 性别), data = summ) +
     geom_line(aes(话题, 均值, group = 性别, color = 性别), data = summ, alpha = 0.25) +
     ggtitle("男女各问题均分") + geom_hline(yintercept=0, color = "darkgray") +
     geom_vline(xintercept=c(20.5, 30.5), color="darkgray") +
@@ -523,4 +523,4 @@ ggplot() + geom_point(aes(话题, 均值, color = 性别), data = summ) +
 
 ---
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}

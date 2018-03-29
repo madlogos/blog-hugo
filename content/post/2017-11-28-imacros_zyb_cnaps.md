@@ -1,16 +1,16 @@
 ---
-title: iMacros脚本运行了三天，爬取了40万行现代化支付行号数据
+title: iMacros脚本运行三天，爬取了40万行现代化支付行号
 slug: imacros_zyb_cnaps_scrapy
 description: "利用iMacros逐页爬取中原银行的CNAPS现代化支付行号信息，再利用R合并成数据库。"
 date: 2017-11-28
-lastmod: 2017-12-3
+lastmod: 2017-12-27
 tags: [imacros, 爬虫, CNAPS, 自动化]
 keyword: ["imacros", "R", "爬虫", "CNAPS"]
 categories: [技术]
 series: ["自动化爬取"]
 isCJKLanguage: true
 reward: true
-outputs: 
+outputs:
   - html
   - markdown
 ---
@@ -26,7 +26,12 @@ outputs:
 
 ……
 
-发人深省，对不对？这些正是当今最严肃而真实的信仰，有着最为坚定的践行者。~~在古代~~2015年全球最大的雄性交友平台GitHub上出了个网红毛子码农、脚本狂魔[Narkoz](https://github.com/NARKOZ/hacker-scripts)，他的人生原则是：**如果一件事要耗费自己90秒以上，那就写个脚本**。这些奇葩的脚本包括：如加班到21点以后就自动给老婆发马屁短信、收到蠢货DBA的任何求助邮件后自动恢复数据库的最近备份、让咖啡机等待17秒然后煮杯咖啡并等待24秒再灌入杯子（正好是作者起身走到咖啡机前的耗时）……
+发人深省，对不对？这些正是当今最严肃而真实的信仰，有着最为坚定的践行者。~~在古代~~2015年全球最大的雄性交友平台GitHub上出了个网红毛子码农、脚本狂魔[Narkoz](https://github.com/NARKOZ/hacker-scripts)，他的人生信条是：**如果一件事要耗费自己90秒以上，那就写个脚本**。这些奇葩的脚本包括：
+
+- 如加班到21点以后就自动给老婆发马屁短信；
+- 收到蠢货DBA的任何求助邮件后自动恢复数据库的最近备份
+- 让咖啡机等待17秒然后煮杯咖啡并等待24秒再灌入杯子（正好是作者起身走到咖啡机前的耗时）
+- ……
 
 从时间效益的经济学评价来讲，这个准则烂透了。这好比为了节约每天通勤的公交车钱，去买了一辆跑车。但跑车本身还是很拉风的。若能竖立起极客死宅的品牌形象，还是可能会产生某些**潜在的**溢价——比如说，会有更多的人请你修电脑。
 
@@ -36,12 +41,12 @@ outputs:
 
 ## 这就带来了第一个问题
 
-![蛤？这是啥？](http://ohghnje4x.bkt.clouddn.com/meme/yilianmengbi.jpg)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/meme/yilianmengbi.jpg" title="蛤？这是啥？" %}}
 
 <!--more-->
 
 > 所谓现代化支付行号 (CNAPS)
->       
+>
 > 也叫联行号。
 
 就是中国人民银行搞的一套12位银行代码，用来做自动清算的。在通过手机银行app转账时，选择收款方账户时，也会看到这个代码。它的结构如下：
@@ -53,9 +58,9 @@ outputs:
 
 所以如果要搭一个跟支付清算相关的系统，就很有必要把CNAPS作为基建纳入考虑。这套代码并不公开，但是公开渠道仍能从一些银行的官网查到。比如[河北银行](https://www.hebbank.com/corporbank/otherBankQueryWeb.do)、[浙商银行](https://corbank.czbank.com/CORPORBANK/query_unionBank_index.jsp)。
 
-![河北银行CNAPS查询页](http://ohghnje4x.bkt.clouddn.com/image/171128/hebbank.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/hebbank.png" title="图|河北银行CNAPS查询页" %}}
 
-![浙商银行CNAPS查询页](http://ohghnje4x.bkt.clouddn.com/image/171128/zsbank.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/zsbank.png" title="图|浙商银行CNAPS查询页" %}}
 
 随手上去试了两把，还挺好用。于是思路比较清楚了：穷尽所有查询策略，把返回的结果提出来存好。
 
@@ -65,9 +70,9 @@ outputs:
 
 上面提到的这两家都要输校验码，攻起来有门槛。所以退而求其次，发现一家[中原银行](http://www.zybank.com.cn/zyb/zh_CN/jshj/lhhquery.html)。
 
-![中原银行CNPAS查询页](http://ohghnje4x.bkt.clouddn.com/image/171128/zybank.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/zybank.png" title="图|中原银行CNPAS查询页" %}}
 
-这就比较好对付一些，而且信息更多，连网店地址也提供。
+这就比较好对付一些，而且信息更多，连网点地址也提供。
 
 ### 其次，办法要对路
 
@@ -87,17 +92,17 @@ outputs:
 
 对于本地的任务，其实最合适的工具是Selenium IDE (或Katalon之类替代品)，一样从录制宏开始。但我当时并不会。好在Firefox里有一个历史悠久的代替品：iMacros。看，名字里就有一个“宏”。它也有Chrome和IE的版本，通过浏览器扩展商店装好后，模样长这样：
 
-![imacros](http://ohghnje4x.bkt.clouddn.com/html/171128/imacros.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/imacros.png" title="图|iMacros for Chrome界面" %}}
 
 如果自己录一段宏，打开后长这样：
 
-![imacros code](http://ohghnje4x.bkt.clouddn.com/image/171128/imacros_demo1.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/imacros_demo1.png" title="图|iMacros脚本代码" %}}
 
 由于完全是一堆动作指令，所以很容易读懂。无非是关闭其他标签页，打开一个网址，依次在几个文本控件里填入内容，最后点按钮提交。
 
 双击录好的iim脚本运行，就把刚才的录入工作重复执行一遍。就跟自己动手一毛一样。
 
-![imacros demo](http://ohghnje4x.bkt.clouddn.com/image/171128/imacros_demo2.gif)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/imacros_demo2.gif" title="图|iMacros demo" %}}
 
 想象一下你有几千条记录要在网上填入。用imacros，只要在脚本同目录下准备一个csv，整理好数据，然后修改一下上面的代码，读入csv，逐行扫描，按布局顺序提取数据`{{!COL1}}`、`{{!COL2}}`、...，填入对应的控件，提交。接下来边喝茶边看屏幕飞滚，繁复的录入任务就自行完成了。
 
@@ -125,7 +130,7 @@ next i
 for (var i=0; i < 银行数; i++){
     for (var j=0; j < 省份和城市对数; j++){
         iimPlay(一段imacros宏，选好银行、省、市，查询结果)
-        iimPlay(另一段imacros宏，返回查询结果的页数，以便诸页去点)
+        iimPlay(另一段imacros宏，返回查询结果的页数，以便逐页去点)
         iimPlay(另一段imacros宏，抽取银行、省、市的标签名，用来给文件命名)
         iimPlay(最后一段imacros宏，循环点查询结果页，把每一页结果存入csv)
     }
@@ -138,21 +143,21 @@ for (var i=0; i < 银行数; i++){
 
 Chrome里F12，可以看到银行下拉菜单的载入值齐齐整整。
 
-![银行下拉菜单载入值](http://ohghnje4x.bkt.clouddn.com/image/171128/banksite.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/banksite.png" title="图|银行下拉菜单载入值" %}}
 
 选中'banksite'这个节点，右键copy element复制下来。到R里，赋值给banks。
 
 ```html
 <select name="select" class="select_170" id="banksite">
-										<option value="">==请选择银行==</option>
-								<option value="100">中原银行</option><option value="102">中国工商银行</option><option value="103">中国农业银行</option><option value="104">中国银行</option><option value="105">中国建设银行</option><option value="201">国家开发银行</option><option value="202"> ....
+<option value="">==请选择银行==</option>
+<option value="100">中原银行</option><option value="102">中国工商银行</option><option value="103">中国农业银行</option><option value="104">中国银行</option><option value="105">中国建设银行</option><option value="201">国家开发银行</option><option value="202"> ....
 ```
 
 用R快速处理一下：
 
 ```r
 banks <- unlist(banks, strsplit(banks, "</option>"))
-paste(sapply(banks, function(v) 
+paste(sapply(banks, function(v)
     gsub("^<option value=\"(\\d+)\">\\D+$", "\\1", v)), collapses=",")
 ```
 
@@ -248,7 +253,7 @@ var cities=[
 	[63,8590],
 	[64,8710],[64,8720],
 	[65,8810],[65,8820],[65,8830],[65,8840],[65,8850],[65,8870],[65,8880],
-	[65,8910],[65,8930],[65,8940],[65,8960],[65,8980],[65,9010],[65,9020]] 
+	[65,8910],[65,8930],[65,8940],[65,8960],[65,8980],[65,9010],[65,9020]]
 var nCities=cities.length;
 ```
 
@@ -329,12 +334,12 @@ for (var i=0; i < nBanks; i++){  // 遍历所有银行
         注意wait seconds，不能太短，否则页面来不及反应*/
         var m = "CODE:";
         m += "VERSION BUILD=844   " + "\n";
-        m += "TAG POS=1 TYPE=SELECT ATTR=ID:banksite CONTENT=%" 
+        m += "TAG POS=1 TYPE=SELECT ATTR=ID:banksite CONTENT=%"
             + banks[i] + "\n";
-        m += "TAG POS=1 TYPE=SELECT ATTR=ID:province CONTENT=%" 
+        m += "TAG POS=1 TYPE=SELECT ATTR=ID:province CONTENT=%"
             + cities[j][0] + "\n";
         m += "WAIT SECONDS=3" + "\n";
-        m += "TAG POS=1 TYPE=SELECT ATTR=ID:city CONTENT=%" 
+        m += "TAG POS=1 TYPE=SELECT ATTR=ID:city CONTENT=%"
             + cities[j][1] + "\n";
         m += "TAG POS=1 TYPE=A ATTR=ID:search" + "\n";
         m += "WAIT SECONDS=4";
@@ -351,12 +356,12 @@ for (var i=0; i < nBanks; i++){  // 遍历所有银行
         /* 如果有下一页，则继续点下一页链接，知道最后一页，
         并将表格内容存入‘银行_省_市_页码_时间’.csv*/
         if (nextPge > 0) {
-            for (var k=1; k <= lastPge; k++){                
+            for (var k=1; k <= lastPge; k++){
                 m = "CODE:VERSION BUILD=844          " + "\n";
                 m += "TAG POS=1 TYPE=A ATTR=TXT:" + k + "\n";
                 m += "TAG POS=2 TYPE=TABLE ATTR=TXT:* EXTRACT=TXT" + "\n";
-                m += "SAVEAS TYPE=EXTRACT FOLDER=* FILE=" + bankName + "_" 
-                    + provName + "_" + cityName + "_" + k 
+                m += "SAVEAS TYPE=EXTRACT FOLDER=* FILE=" + bankName + "_"
+                    + provName + "_" + cityName + "_" + k
                     + "_{{!NOW:yymmddhhnnss}}.csv" + "\n";
                 m += "WAIT SECONDS=1";
                 iimPlay(m);   //执行
@@ -374,11 +379,11 @@ for (var i=0; i < nBanks; i++){  // 遍历所有银行
 
 看到上千个文件静静躺在文件夹里，感觉到了巅峰愉悦。
 
-![爬下来的文件](http://ohghnje4x.bkt.clouddn.com/html/171128/cnpas_tbl.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/cnpas_tbl.png" title="图|爬下来的csv文件" %}}
 
 里面的文件纷纷长这样：
 
-![csv的原始面目](http://ohghnje4x.bkt.clouddn.com/html/171128/cnaps_raw.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/cnaps_raw.png" title="图|csv的原始面目" %}}
 
 ### R合并csv
 
@@ -397,7 +402,7 @@ files <- list.files(".")
 files <- files[!grepl("zip$|bat$", files)]
 ## 某些文件莫名奇妙没有拿到后缀名，强制重命名
 if (!all(grepl("csv$", files))){
-  file.rename(files[!grepl("csv$", files)], 
+  file.rename(files[!grepl("csv$", files)],
             paste0(files[!grepl("csv$", files)], ".csv"))
 }
 ## 文件名全名显示
@@ -434,7 +439,7 @@ message("output cnaps csv is generated.")
 
 跑完脚本，数据变成了：
 
-![成品数据](http://ohghnje4x.bkt.clouddn.com/html/171128/cnpas.png)
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/cnpas.png" title="图|成品数据效果" %}}
 
 一共40多万条记录。谢天谢地，老泪纵横。
 
@@ -464,10 +469,10 @@ message("output cnaps csv is generated.")
 
 工具没那么重要，重要的是理念。
 
-Save your life. Automate everything. 
+Save your life. Automate everything.
 
 [完]
 
 ----
 
-<img src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" />
+{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
