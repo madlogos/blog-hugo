@@ -15,7 +15,9 @@ outputs:
   - markdown
 ---
 
-> 如果浏览器提示本文加载了不安全的脚本，请点允许。
+{{% admonition info 注意 %}}
+如果浏览器提示本文加载了不安全的脚本，请点允许。
+{{% /admonition %}}
 
 今次主题比较简单。上个话题留了点冷饭，看起来还没馊，咱敲个鸡蛋炒个蛋炒饭。
 
@@ -78,7 +80,7 @@ saveGIF({
 }, "song.gif")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170430/song.gif)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/song.gif)
 
 很明显，前期京畿还很有优势，仁宗开始江南大盛，到神宗以后就是闽人大盛。热力分布持续东南移。
 
@@ -93,7 +95,7 @@ saveGIF({
 }, "ming.gif")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170430/ming.gif)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/ming.gif)
 
 明和北宋热力分布是反向变动的，神宗以后进士来源地更弥散了。赣闽次第没落，而京畿有了起色。
 
@@ -109,7 +111,7 @@ saveGIF({
 ani.options(oopt)
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170430/qing.gif)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/qing.gif)
 
 清和明类似，中前期江南独大，鸦片战争以后分布逐渐弥散。
 
@@ -172,26 +174,26 @@ make_leaflet <- function(refMap, dyn, bgColor="red", dataset, cutyears){
 make_leaflet(nsong.bou, "北宋", "red", nsong.js, c(960, 1021, 1085, 1127))
 ```
 
-<iframe src="http://ohghnje4x.bkt.clouddn.com/html/170430/song.html" width="100%" height="500"></iframe>
+<iframe src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/song.html" width="100%" height="500"></iframe>
 
-[点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/song.html)
+[点开查看源文件](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/song.html)
 
 
 ```r
 make_leaflet(ming.bou, "明朝", "red", ming.js, c(1368, 1434, 1572, 1644))
 ```
 
-<iframe src="http://ohghnje4x.bkt.clouddn.com/html/170430/ming.html" width="100%" height="500"></iframe>
+<iframe src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/ming.html" width="100%" height="500"></iframe>
 
-[点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/ming.html)
+[点开查看源文件](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/ming.html)
 
 ```r
 make_leaflet(qing.bou, "清朝", "black", qing.js, c(1644, 1735, 1850, 1911))
 ```
 
-<iframe src="http://ohghnje4x.bkt.clouddn.com/html/170430/qing.html" width="100%" height="500"></iframe>
+<iframe src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/qing.html" width="100%" height="500"></iframe>
 
-[点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/qing.html)
+[点开查看源文件](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/qing.html)
 
 #### 古今地名一致性
 
@@ -308,9 +310,9 @@ knitr::kable(js.order[order(js.order$`(all)`, decreasing=TRUE),])
 
 给张图，同样是基于leaflet的。注意：**文件非常很大，极费流量**。
 
-<iframe src="http://ohghnje4x.bkt.clouddn.com/html/170430/city.html" width="100%" height="500"></iframe>
+<iframe src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/city.html" width="100%" height="500"></iframe>
 
-[点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/city.html)
+[点开查看源文件](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/city.html)
 
 ##### 然后是省级排名
 
@@ -349,7 +351,7 @@ knitr::kable(js.order.prov[order(js.order.prov$`(all)`, decreasing=TRUE),])
 |26	|Ningxia Hui|0		|0		|7		|7|
 |27	|Taiwan		|0		|0		|2		|2|
 
-同样给张图。这次是基于ECharts2的。由于这个包是我写的，所以我要额外安利一下http://madlogos.github.io/recharts。
+同样给张图。这次是基于ECharts2的。由于这个包是我写的，所以我要额外安利一下<http://madlogos.github.io/recharts>。
 
 ```r
 library(recharts)
@@ -363,9 +365,9 @@ echartR(js.order.ec, CN, value, t=variable, type="map_china", subtype="average")
     setTimeline(autoPlay=TRUE) %>% setLegend(FALSE)
 ```
 
-<iframe src="http://ohghnje4x.bkt.clouddn.com/html/170430/prov.html" width="640" height="500"></iframe>
+<iframe src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/prov.html" width="640" height="500"></iframe>
 
-[点开查看源文件](http://ohghnje4x.bkt.clouddn.com/html/170430/prov.html)
+[点开查看源文件](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170430/prov.html)
 
 图动起来了。感觉棒呆。
 
@@ -375,4 +377,6 @@ echartR(js.order.ec, CN, value, t=variable, type="map_china", subtype="average")
 
 ----
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+<!-- {% endraw %} -->

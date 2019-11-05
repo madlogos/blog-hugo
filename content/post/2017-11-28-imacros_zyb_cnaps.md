@@ -19,19 +19,19 @@ outputs:
 
 码农界有个著名的“三次法则 (rule of three)”：**如果一段代码重复出现了三次，就要考虑抽出来写一个子程序，以便复用**。这是条宝贵的法则，可以衍生出更多的强迫症版本，随随便便就能举出很多喜闻乐见的例子，比如：
 
-> - 一个词在同一句话里出现三次就不能忍，必须换近义词；
-> - 一件事手动做三次就不能忍，必须写程序自动化；
-> - 一顿饭重复吃三口就不能忍，必须开发一个喂饭机；
-> - 同一处空气重复呼吸三口就不能忍，必须装一台呼吸机
+> -   一个词在同一句话里出现三次就不能忍，必须换近义词；
+> -   一件事手动做三次就不能忍，必须写程序自动化；
+> -   一顿饭重复吃三口就不能忍，必须开发一个喂饭机；
+> -   同一处空气重复呼吸三口就不能忍，必须装一台呼吸机
 
 ……
 
 发人深省，对不对？这些正是当今最严肃而真实的信仰，有着最为坚定的践行者。~~在古代~~2015年全球最大的雄性交友平台GitHub上出了个网红毛子码农、脚本狂魔[Narkoz](https://github.com/NARKOZ/hacker-scripts)，他的人生信条是：**如果一件事要耗费自己90秒以上，那就写个脚本**。这些奇葩的脚本包括：
 
-- 如加班到21点以后就自动给老婆发马屁短信；
-- 收到蠢货DBA的任何求助邮件后自动恢复数据库的最近备份
-- 让咖啡机等待17秒然后煮杯咖啡并等待24秒再灌入杯子（正好是作者起身走到咖啡机前的耗时）
-- ……
+-   如加班到21点以后就自动给老婆发马屁短信；
+-   收到蠢货DBA的任何求助邮件后自动恢复数据库的最近备份
+-   让咖啡机等待17秒然后煮杯咖啡并等待24秒再灌入杯子（正好是作者起身走到咖啡机前的耗时）
+-   ……
 
 从时间效益的经济学评价来讲，这个准则烂透了。这好比为了节约每天通勤的公交车钱，去买了一辆跑车。但跑车本身还是很拉风的。若能竖立起极客死宅的品牌形象，还是可能会产生某些**潜在的**溢价——比如说，会有更多的人请你修电脑。
 
@@ -41,7 +41,7 @@ outputs:
 
 ## 这就带来了第一个问题
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/meme/yilianmengbi.jpg" title="蛤？这是啥？" %}}
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/yilianmengbi.jpg" title="蛤？这是啥？" %}}
 
 <!--more-->
 
@@ -58,9 +58,11 @@ outputs:
 
 所以如果要搭一个跟支付清算相关的系统，就很有必要把CNAPS作为基建纳入考虑。这套代码并不公开，但是公开渠道仍能从一些银行的官网查到。比如[河北银行](https://www.hebbank.com/corporbank/otherBankQueryWeb.do)、[浙商银行](https://corbank.czbank.com/CORPORBANK/query_unionBank_index.jsp)。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/hebbank.png" title="图|河北银行CNAPS查询页" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/hebbank.png" title="图 | 河北银行CNAPS查询页" %}}
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/zsbank.png" title="图|浙商银行CNAPS查询页" %}}
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/zsbank.png" title="图 | 浙商银行CNAPS查询页" %}}
+<!-- {% endraw %} -->
 
 随手上去试了两把，还挺好用。于是思路比较清楚了：穷尽所有查询策略，把返回的结果提出来存好。
 
@@ -70,17 +72,19 @@ outputs:
 
 上面提到的这两家都要输校验码，攻起来有门槛。所以退而求其次，发现一家[中原银行](http://www.zybank.com.cn/zyb/zh_CN/jshj/lhhquery.html)。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/zybank.png" title="图|中原银行CNPAS查询页" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/zybank.png" title="图 | 中原银行CNPAS查询页" %}}
+<!-- {% endraw %} -->
 
 这就比较好对付一些，而且信息更多，连网点地址也提供。
 
 ### 其次，办法要对路
 
-- [x] 要理智。当然不能手工复制粘贴。平均查一个结果需要点行名、省、市，输验证码、按确认，超过10次交互动作。几千次这么做下来，非死亦残。更不要提错误率了。<kbd>放弃</kbd>
-- [x] 我比较熟悉的`rvest`这类简单的R爬虫包，只能对付静态网页，无法模拟网页交互行为。<kbd>放弃</kbd>
-- [x] Python的`scrapy`框架很牛，也能对付验证码、AJAX异步之类问题。次一点，R里面也有`Rcurl`。但我都不会。<kbd>放弃</kbd>
-- [x] 要模拟用户交互行为最好的办法是`Selenium`这类框架(代码版按键精灵)，但是当时我还不会。<kbd>放弃</kbd>。
-- [x] 其他。<kbd>不明</kbd>
+-   [x] 要理智。当然不能手工复制粘贴。平均查一个结果需要点行名、省、市，输验证码、按确认，超过10次交互动作。几千次这么做下来，非死亦残。更不要提错误率了。<kbd>放弃</kbd>
+-   [x] 我比较熟悉的`rvest`这类简单的R爬虫包，只能对付静态网页，无法模拟网页交互行为。<kbd>放弃</kbd>
+-   [x] Python的`scrapy`框架很牛，也能对付验证码、AJAX异步之类问题。次一点，R里面也有`Rcurl`。但我都不会。<kbd>放弃</kbd>
+-   [x] 要模拟用户交互行为最好的办法是`Selenium`这类框架(代码版按键精灵)，但是当时我还不会。<kbd>放弃</kbd>。
+-   [x] 其他。<kbd>不明</kbd>
 
 所谓“夫未战而庙算者，得算多也”。经过一番严谨的分析，我发现：**技术上搞不定**——再次落入了经典的“看得上的买不起，买得起的看不上”窘境。
 
@@ -92,17 +96,23 @@ outputs:
 
 对于本地的任务，其实最合适的工具是Selenium IDE (或Katalon之类替代品)，一样从录制宏开始。但我当时并不会。好在Firefox里有一个历史悠久的代替品：iMacros。看，名字里就有一个“宏”。它也有Chrome和IE的版本，通过浏览器扩展商店装好后，模样长这样：
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/imacros.png" title="图|iMacros for Chrome界面" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/imacros.png" title="图 | iMacros for Chrome界面" %}}
+<!-- {% endraw %} -->
 
 如果自己录一段宏，打开后长这样：
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/imacros_demo1.png" title="图|iMacros脚本代码" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/imacros_demo1.png" title="图 | iMacros脚本代码" %}}
+<!-- {% endraw %} -->
 
 由于完全是一堆动作指令，所以很容易读懂。无非是关闭其他标签页，打开一个网址，依次在几个文本控件里填入内容，最后点按钮提交。
 
 双击录好的iim脚本运行，就把刚才的录入工作重复执行一遍。就跟自己动手一毛一样。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/imacros_demo2.gif" title="图|iMacros demo" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/imacros_demo2.gif" title="图 | iMacros demo" %}}
+<!-- {% endraw %} -->
 
 想象一下你有几千条记录要在网上填入。用imacros，只要在脚本同目录下准备一个csv，整理好数据，然后修改一下上面的代码，读入csv，逐行扫描，按布局顺序提取数据`{{!COL1}}`、`{{!COL2}}`、...，填入对应的控件，提交。接下来边喝茶边看屏幕飞滚，繁复的录入任务就自行完成了。
 
@@ -141,9 +151,11 @@ for (var i=0; i < 银行数; i++){
 
 ## 提取银行和省份+城市的控件值
 
-Chrome里F12，可以看到银行下拉菜单的载入值齐齐整整。
+Chrome里<kbd>F12</kbd>，可以看到银行下拉菜单的载入值齐齐整整。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/171128/banksite.png" title="图|银行下拉菜单载入值" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/banksite.png" title="图 | 银行下拉菜单载入值" %}}
+<!-- {% endraw %} -->
 
 选中'banksite'这个节点，右键copy element复制下来。到R里，赋值给banks。
 
@@ -271,8 +283,8 @@ var nCities=cities.length;
 
 所以只要探一下下一页和末页的链接有没有绑`onclick`事件，就知道是不是有效。
 
-- 如果搜出结果，“下一页”能点，说明不止一页，那么就可以往下点开页面，直到末页。
-- 如果点不了，就不用费劲循环了。
+-   如果搜出结果，“下一页”能点，说明不止一页，那么就可以往下点开页面，直到末页。
+-   如果点不了，就不用费劲循环了。
 
 于是写了个脚本getNextLastPage.iim，用`SEARCH`正则表达式的方法从页面源代码里提取js绑定。
 
@@ -379,11 +391,15 @@ for (var i=0; i < nBanks; i++){  // 遍历所有银行
 
 看到上千个文件静静躺在文件夹里，感觉到了巅峰愉悦。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/cnpas_tbl.png" title="图|爬下来的csv文件" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/cnpas_tbl.png" title="图 | 爬下来的csv文件" %}}
+<!-- {% endraw %} -->
 
 里面的文件纷纷长这样：
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/cnaps_raw.png" title="图|csv的原始面目" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/cnaps_raw.png" title="图 | csv的原始面目" %}}
+<!-- {% endraw %} -->
 
 ### R合并csv
 
@@ -439,7 +455,9 @@ message("output cnaps csv is generated.")
 
 跑完脚本，数据变成了：
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/html/171128/cnpas.png" title="图|成品数据效果" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/171128/cnpas.png" title="图 | 成品数据效果" %}}
+<!-- {% endraw %} -->
 
 一共40多万条记录。谢天谢地，老泪纵横。
 
@@ -457,10 +475,10 @@ message("output cnaps csv is generated.")
 
 随即，就在前两天，这家“全球最流行的浏览器自动化解决方案”提供者，升级了imacros浏览器插件，样子少许好看了点。然而免费版的功能却从猛犸缩水到野猪。
 
-- 免费版最多只能录50个动作
-- 免费版不再能读取本地文件
-- 免费版不能回放iim脚本
-- 只有IE版插件能用csv作输入源，不能超过100行、3列
+-   免费版最多只能录50个动作
+-   免费版不再能读取本地文件
+-   免费版不能回放iim脚本
+-   只有IE版插件能用csv作输入源，不能超过100行、3列
 ...
 
 要达到以往免费版的功能，需要升级到个人版。价钱比企业版可便宜多了，大约只需要……700大洋吧。
@@ -475,4 +493,6 @@ Save your life. Automate everything.
 
 ----
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+<!-- {% endraw %} -->

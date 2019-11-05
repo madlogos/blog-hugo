@@ -19,15 +19,19 @@ outputs:
 
 周末找在线GIS素材，误打误撞进到了worldmap.harvard.edu——一座名副其实的学术宝库。它是哈佛大学搞的一个**开源**地理可视化平台，社会、经济、历史学科的学者可以自己创建、上传数据集，方便地做多图层地理可视化。这个设计充满学术理想，也为有志于成为世界一流名校的大学树立了一座看得见摸得着的价值标杆：**卓越、开放、自治、共享**。
 
-中国地图worldmap.harvard.edu/chinamap是其中一个子站，已经上线多个数据层，包括社会/人口、经济、交通、能源、环境/气候、公共卫生，甚至历史地图。比如下面的视图，就是细化到县级的人口密度热力图，默认叠加在OpenStreetMap底图上，效果非常棒。
+中国地图 <worldmap.harvard.edu/chinamap> 是其中一个子站，已经上线多个数据层，包括社会/人口、经济、交通、能源、环境/气候、公共卫生，甚至历史地图。比如下面的视图，就是细化到县级的人口密度热力图，默认叠加在OpenStreetMap底图上，效果非常棒。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/wmap_harvard.png" title="图|哈佛中国地图" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/wmap_harvard.png" title="图 | 哈佛中国地图" %}}
+<!-- {% endraw %} -->
 
 让我特别感兴趣的是历史地图部分。上面赫然列着北宋、明、清的进士散点图和热力图。当把它们和当今人口密度热力图叠加显示，我们会惊讶地发现过去一千年来盛产进士的地方，几乎严丝合缝地对应着今天中国人口最稠密的地区。进士分布只能指示那个时代的财富分布。但把千年以来的进士之乡叠加起来（如同叠加起无数个财富变迁的历史断面），就能看到这些财富分布的残影。而古今之间的这种辉映，说明今天的人们依然在从宋以降的这种“地气”大格局中受惠。
 
 右键这三个进士数据层，选择“Share Layer”，就能看到一个分享页面。除了视图本身，还有参考数据集的链接，可以导出多种格式。我们导一个Excel出来。Excel的名称是CBDB_exams_NSong_WGS84_kto.xls。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/cbdb_data.png" title="图|CBDB科举数据集" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/cbdb_data.png" title="图 | CBDB科举数据集" %}}
+<!-- {% endraw %} -->
 
 这就十分厉害了：
 
@@ -125,7 +129,9 @@ ggplot() + geom_bar(aes(EntryYear, .), stat='identity', data=jinshi.putian) +
     theme_hc() + ggtitle("莆田进士数变迁") + xlab("年份") + ylab("人数")
 ```
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/PutianJinshi.png" title="图|莆田进士人数的变迁" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/PutianJinshi.png" title="图 | 莆田进士人数的变迁" %}}
+<!-- {% endraw %} -->
 
 南宋、元代没有数据，所以是空白。明代自1560年代后，进士数就突然非常稀疏。原因很简单：这一年倭寇攻陷莆田并屠城。从此莆田文脉衰颓，再也没有复兴。
 
@@ -158,7 +164,9 @@ sort(table(jinshi$AddrChn), decreasing=TRUE)
 
 当代疆域作为底图，需要拿国/省边界数据。在R中，`mapdata`配合`maps`可以取到国界数据，但太老了（重庆都没有）。反正只是示意，精度要求不那么高，我们可以到开放数据平台Diva-GIS.org去找数据。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/divagis.png" title="图|Diva-GIS网站" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/divagis.png" title="图 | Diva-GIS网站" %}}
+<!-- {% endraw %} -->
 
 需要分别下载CHN和TWN的地图数据（香港HKG和澳门MAC就不去下载了，反正都很小，不影响主要效果）。把CHN的Level1和TWN的Level0数据拼合起来，就大致妥了。
 
@@ -176,14 +184,17 @@ p.chn <- ggplot() + geom_polygon(
 
 这个p.chn对象后面可以反复复用。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/ChnMap.png" title="图|中国地图底图" %}}
-
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/ChnMap.png" title="图 | 中国地图底图" %}}
+<!-- {% endraw %} -->
 
 ### 古代疆域
 
 古代疆域就不太容易下载到现成的了，好在我们也有开源平台可以用：发现中国（webdog.cn）。这是一个基于WebGIS技术的公益网站，用户可以自己创建地图，最简单的玩法是衬一张历史地图底图，然后创建图层描点。地图数据以KML格式存储，可以导出来。KML本质是一种XML标记语言，Google地图就使用它。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/webdog.png" title="图|发现中国（Webdog）" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/webdog.png" title="图 | 发现中国（Webdog）" %}}
+<!-- {% endraw %} -->
 
 我们可以登进去，复制其他用户创建好的地图，然后导出来。导出的KMZ是KML的压缩包，Zip解压即可。
 
@@ -250,11 +261,13 @@ p.qing <- p.chn + geom_polygon(aes(long, lat, group=id),
     ggtitle("清朝疆域")
 ```
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/NSongMap.png" title="图|北宋疆域示意图" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/NSongMap.png" title="图 | 北宋疆域示意图" %}}
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/MingMap.png" title="图|明朝疆域示意图" %}}
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/MingMap.png" title="图 | 明朝疆域示意图" %}}
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/QingMap.png" title="图|清朝疆域示意图" %}}
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/QingMap.png" title="图 | 清朝疆域示意图" %}}
+<!-- {% endraw %} -->
 
 完美。
 
@@ -270,9 +283,9 @@ p.song + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
     ggtitle("北宋进士来源地")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/NSongJinshi1.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/NSongJinshi1.png)
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/NSongJinshi2.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/NSongJinshi2.png)
 
 北宋的进士来源地呈现江浙、福建双巨头，江西、四川、河南三极的格局。元祐新旧党争，旧党分为朔、洛、蜀，正好对应于河南、四川这两极，而司马光特别瞧不起闽、楚之人，正是进士热图上特别炽热的福建、江西。之所以敌意这么重，就是因为这几个地方科举太厉害了，却聊不到一块儿去。
 
@@ -286,9 +299,9 @@ p.ming + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
     ggtitle("明朝进士来源地")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/MingJinshi1.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/MingJinshi1.png)
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/MingJinshi2.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/MingJinshi2.png)
 
 到明代，双巨头格局不复存在，只剩下江浙一极独大，其余几个热点地区分别是北直隶、江西、福建、河南。四川从多极格局中完全消失，可见蒙元入侵影响之深远。天启中，东林党与阉党争权，前者恰好对应于江南单极，于是剩下几极（齐党、楚党、浙党）不得不寄身阉党羽翼下。
 
@@ -302,9 +315,9 @@ p.qing + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
     ggtitle("清朝进士来源地")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/QingJinshi1.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/QingJinshi1.png)
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/QingJinshi2.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/QingJinshi2.png)
 
 清代继续沿袭江浙单极格局。福建进一步萎缩，而长江中下游的安徽、湖北、湖南、江西都呈现相当的强势，另一个强势的地区则是京畿的直隶、山东。
 
@@ -326,9 +339,9 @@ p.chn + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
     ggtitle("北宋、明、清进士来源地")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/SongMingQingJinshi1.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/SongMingQingJinshi1.png)
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/SongMingQingJinshi2.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/SongMingQingJinshi2.png)
 
 ## 来源地的时间趋势
 
@@ -340,7 +353,9 @@ p.chn + stat_density_2d(aes(x_coord, y_coord, fill=..level..),
 
 CBDB数据库有两种离线版本：MS Access和SQLite。我用Linux，所以只能选后者。
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/image/170423/harvard_cbdb.png" title="图|哈佛CBDB数据库" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/harvard_cbdb.png" title="图 | 哈佛CBDB数据库" %}}
+<!-- {% endraw %} -->
 
 下下来之后，用RSQLite来抽数据。我的用法不复杂，只要取出Addresses表就行。
 
@@ -403,9 +418,9 @@ ggplot(nsong.stat, aes(Decade, value, fill=variable))+
     theme(legend.position="bottom")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/NSongJinshiProp1.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/NSongJinshiProp1.png)
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/NSongJinshiProp2.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/NSongJinshiProp2.png)
 
 宋初主要仍从后周控制区取士，之后京畿路和河北东路等北方地区比重急剧下跌，而福建路、两浙西、两浙东路等地进士比重不断攀升。这是北宋时地气南倾的明显表现。
 
@@ -429,9 +444,9 @@ ggplot(ming.stat, aes(Decade, value, fill=variable))+
     theme(legend.position="bottom")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/MingJinshiProp1.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/MingJinshiProp1.png)
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/MingJinshiProp2.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/MingJinshiProp2.png)
 
 明代江西进士的比重一直在下降，而浙江、中都留守司（大体包括江苏和安徽）的比重明显升高。来自中都留守司辖区的进士比重在隆庆年间达到高峰，之后逐步下降。神宗后，来自山东、京师等北方地区的进士比重升高了。这也就是后来东林和阉党党争的人事基础。
 
@@ -449,9 +464,9 @@ ggplot(qing.stat, aes(Decade, value, fill=variable))+
     theme(legend.position="bottom")
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/QingJinshiProp1.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/QingJinshiProp1.png)
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/QingJinshiProp2.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/QingJinshiProp2.png)
 
 清代前期江苏和浙江占了大头，中后期逐渐下降，而一个醒目的变化是湖南、广东比重的上升。这些人构成清后期变法维新的主力。
 
@@ -504,24 +519,24 @@ for (famName in c(
 }
 ```
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Wang.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Li.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Zhang.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Chen.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Liu.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Wu.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Yang.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Huang.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Lin.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Zhou.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Wang.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Li.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Zhang.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Chen.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Liu.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Wu.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Yang.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Huang.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Lin.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Zhou.png)
 
 哈，都是全国性的大姓，所以热点来自五湖四海。唯一的例外是“林”，基本上就是福建一地。
 
 受此启发，看一下“钱”、“沈”、“陆”。果然是无锡钱、吴兴沈、苏州陆。
 
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Qian.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Shen.png)
-![](http://ohghnje4x.bkt.clouddn.com/image/170423/Jinshi_Lu.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Qian.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Shen.png)
+![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170423/Jinshi_Lu.png)
 
 姓氏地理分析意思相对不是那么大。差不多是各姓氏的随机抽样。
 
@@ -531,4 +546,6 @@ for (famName in c(
 
 ----
 
-{{% figure src="http://ohghnje4x.bkt.clouddn.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+<!-- {% raw %} -->
+{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+<!-- {% endraw %} -->
