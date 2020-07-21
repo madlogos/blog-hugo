@@ -17,6 +17,8 @@ outputs:
 
 ## 数据提取
 
+[接上篇](https://madlogos.github.io/post/infectdis_stat1/)
+
 现在，可以着手把存储在附件里的信息结构化提取出来了。但在这之前，还有一个硬骨头要啃。
 
 **要把图片附件识别成文本。**
@@ -25,7 +27,7 @@ outputs:
 
 **手工录入。**
 
-![](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170406/no_word_to_say.jpg)
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0406/no_word_to_say.jpg" width="50%" %}}
 
 这项工作很不好做，让我不禁怀疑起人生。但只有经过这样的磨练，才能对疾控系统的信息化水平有一个实操层面的认识。倘若遇到这方面的项目机会，**记得要把工程预算乘以3**。
 
@@ -39,7 +41,7 @@ outputs:
 
 <!--more-->
 
-> 有读者留言提到，这些数据其实都可以从公共卫生信息网申请到。没错。但是作为数据公开党，我对这种公共数据管制甚至收费牟利的做法非常不屑。这根本不符合如今的时代精神。本文提到的这些结构化数据文档，都已打包存到[七牛云](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/170406/infect_dis_stat.zip)。人人都可以免费用。
+> 有读者留言提到，这些数据其实都可以从公共卫生信息网申请到。没错。但是作为数据公开党，我对这种公共数据管制甚至收费牟利的做法非常不屑。这根本不符合如今的时代精神。本文提到的这些结构化数据文档，都已打包存到[七牛云](https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0406/infect_dis_stat.zip)。人人都可以免费用。
 
 ### `docxtractr`
 
@@ -292,10 +294,10 @@ makeTsPlot <- function(
 
 利用这个函数，只要来个数据框，就能出图。此外也不失灵活性，部分美学效果可以自定义调整。
 
-[待续]
+[待续](https://madlogos.github.io/post/infectdis_stat3/)
 
 ----
 
 <!-- {% raw %} -->
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
 <!-- {% endraw %} -->

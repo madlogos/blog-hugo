@@ -1,10 +1,10 @@
 ---
 title: edx作业：用flask建一个简易Web聊天室
 slug: flask-socketio-site-demo
-draft: true
+draft: false
 description: "edx慕课的作业：用flask框架构建一个简易的聊天室应用"
 date: 2019-11-01
-lastmod: 2019-11-01
+lastmod: 2019-11-06
 tags: [Python, Flask, SocketIO, AJAX, web]
 keyword: ["python", "flask", "socket", "bootstrap"]
 categories: [技术]
@@ -16,8 +16,17 @@ outputs:
 ---
 
 {{% admonition abstract 摘要 %}}
-还是edx的作业。今次要用flask_socketio实现一个粗糙的聊天室。
+记载了「通往全栈之路上」的一则edx慕课作业：用flask_socketio实现一个粗糙的聊天室。<br/>
+【honor code警告】如果你刚巧也注册了这门课，千万不要抄。
 {{% /admonition %}}
+
+{{% admonition warning 注意 %}}
+如无法显示视频，可能被作为不安全脚本屏蔽。在浏览器地址栏里点击安全提示图标，允许运行不安全的脚本。
+{{% /admonition %}}
+
+[成品效果视频](https://v.youku.com/v_show/id_XNDQzNzYyNDU4MA==.html?spm=a2h3j.8428770.3416059.1) @ 优酷：
+
+<iframe height=498 width='100%' src='https://player.youku.com/embed/XNDQzNzYyNDU4MA==' frameborder=0 'allowfullscreen'></iframe>
 
 这是哈佛**继续教育学院**开的的[用Python和Javascript撸网络编程](https://courses.edx.org/courses/course-v1:HarvardX+CS50W+Web/course/) 第三个作业项目。
 
@@ -35,6 +44,8 @@ outputs:
 6. 能记住频道，下次回来能立即进去
 7. 延伸功能：比如删除自己的消息，上传附件等
 
+<!--more-->
+
 ## 开工
 
 ### 准备
@@ -44,32 +55,37 @@ outputs:
 
 ### 项目结构
 
+{{% admonition info "源代码托管于Github" %}}
+<a href="https://github.com/madlogos/edx_cs50/tree/master/project2">戳这里看源码</a>
+{{% /admonition %}}
+
 ```
+project2
 |-- application.py
 |-- flask.log
-|-- + static
-|   |-- + css
-|   |   \-- style.css
-|   \-- + js
-|       |-- main.js
-|       \-- chat.js
-\-- + templates
-    |-- _base.html
-    |-- channel.html
-    \-- channels.html
+|--+ static
+|  |--+ css
+|  |  `-- style.css
+|  `--+ js
+|     |-- main.js
+|     `-- chat.js
+`--+ templates
+   |-- _base.html
+   |-- channel.html
+   `-- channels.html
 ```
 
 结构不复杂：
 
 - application.py是后端，所有后台功能代码都写在上面。也可以把自定义函数另外写在一个 .py里，import进来。
-	- 记得export "application.py" 到环境变量`FLASK_APP`，便于后面直接运行`flask run`。在Windows cmd里，用set，PowerShell里用$Env:FLASK_APP=...。
+	- 记得export "application.py" 到环境变量`FLASK_APP`，便于后面直接运行`flask run`。在Windows cmd里，用`set`，PowerShell里用`$Env:FLASK_APP=...`。
 - static文件夹放静态文件，css和js。
 - templates文件夹放各类html模板（html+jinja2语法写的宏）。
 
 
 ### 基础模板
 
-_base.html是框架模板，后续其他页面模板都会套用(extend)它。
+[_base.html](https://github.com/madlogos/edx_cs50/blob/master/project2/templates/_base.html)是框架模板，后续其他页面模板都会套用(extend)它。
 
 
 - 样式主要靠bootstrap
@@ -79,6 +95,7 @@ _base.html是框架模板，后续其他页面模板都会套用(extend)它。
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/_base.html -->
 <!DOCTYPE html>
 <html lang='en'>
     <head>
@@ -115,7 +132,9 @@ _base.html是框架模板，后续其他页面模板都会套用(extend)它。
             {% if messages %}
                 {% for category, message in messages %}
                 <div class="alert alert-{{ category }} alert-dismissable">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <button type="button" class="close" data-dismiss="alert">
+                      &times;
+                    </button>
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -154,41 +173,51 @@ _base.html是框架模板，后续其他页面模板都会套用(extend)它。
 
 user是个比较扁平的字典，存用户名和最后一次访问的频道:
 
-```
+```json
 {
   '<user 1>': '<last visited channel of user 1>',
   '<user 2>': '<last visited channel of user 2>', 
   ...,
-  '<user n>': '<last visited channel of user n>', 
+  '<user n>': '<last visited channel of user n>'
 }
 ```
 
-channels是比较复杂的嵌套字典，每个频道都绑一个字典，包含'created'和双层列表'chats'：
+channels是比较复杂的嵌套字典，每个频道都绑一个字典，包含'created'、'max_id'和双层字典'chats'：
 
-```
+```json
 {
   '<channel 1>': 
     {
       'created': '<creation time of channel 1>',
+      'max_id': <max id of chats>,
       'chats': 
-        [
-          ['<post 1 user>', '<post 1 time>', '<post 1 msg>'],
-          ['<post 2 user>', '<post 2 time>', '<post 2 msg>'],
+        {
+          <id 1>: 
+              {'user': '<post 1 user>', 'time': '<post 1 time>', 
+               'msg': '<post 1 msg>'
+              },
+          <id 2>: 
+              {'user': '<post 2 user>', 'time': '<post 2 time>', 
+               'msg': '<post 2 msg>'
+              },
           ...,
-          ['<post n user>', '<post n time>', '<post n msg>'],
-        ]
+          <id n>: 
+              {'user': '<post n user>', 'time': '<post n time>', 
+               'msg': '<post n msg>'
+              }
+        }
     },
   ...
 }
 ```
 
-chats里包含的就是一条条消息。讲究点的话，应该也存成字典，毕竟time和user、msg类型不同。不过偷懒天经地义，简化处理也没啥不可以。
+chats里包含的就是一条条消息，以id为键，包起'user'、'time'和'msg'。
 
 主路由"/"绑定函数`index`。假如当前`session`里有'act_user'，那么调用`get_channels()`函数（也就是跑去频道列表），否则跳转去login页。
 
 ```python
 # -*- coding: UTF-8 -*-
-
+# application.py
 import os
 import datetime
 import urllib.parse
@@ -215,9 +244,14 @@ def index():
         return get_channels()
 ```
 
-最后在__main__里加一点代码，配置日志输出。部署到生产环境时，要记得把`app.debug`设为False。
+最后在\_\_main\_\_里加一点代码，配置日志输出。运行`python application.py`时，会自动运行这部分。如果继续用`flask run`，这部分不会自动运行。还会报警告，WebSocket无法启用，用Workzeug跑Flask-SocketIO。这是因为新版的Flask在服务端功能做了简化，不再支持WebSocket。
+
+{{% admonition tip "注意" %}}
+部署到生产环境时，要记得把<code>app.debug</code>设为False。
+{{% /admonition %}}
 
 ```python
+# application.py
 if __name__ == '__main__':
     app.debug = True
     handler = logging.FileHandler("flask.log", encoding="UTF-8")
@@ -231,12 +265,17 @@ if __name__ == '__main__':
 
 ### 登录
 
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/landing.png" title="图 | 登陆页" %}}
+
 一般，功能由html模板和python函数配合完成。由于这次的登录功能很简单，当前线程给自己随便起个用户名就行，所以把channels.html当成事实上的首页，在上面套个悬浮页来实现登录。
 
-<a name="channels_html"></a>channels.html模板代码：
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/display_name.png" title="图 | 创建用户" %}}
+
+<a name="channels_html"></a>[channels.html](https://github.com/madlogos/edx_cs50/blob/master/project2/templates/channels.html)模板代码：
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/channels.html -->
 {% extends "_base.html" %}
 
 {% block title %}
@@ -269,11 +308,18 @@ Channels
         <!-- Modal content-->
         <div class="modal-content">
             <form action="{{ url_for('login') }}" method="post">
-                <div class="modal-header"><label for="displayName">Your display name</label></div>
-                <div class="modal-body">
-                    <input type="text" id="displayName" name="displayName" class="form-control validate" placeholder="Your display name">
+                <div class="modal-header">
+                  <label for="displayName">Your display name</label>
                 </div>
-                <div class="modal-footer"><button type="submit" class="btn btn-lg btn-primary">Submit</button></div>
+                <div class="modal-body">
+                    <input type="text" id="displayName" name="displayName"
+                     class="form-control validate" placeholder="Your display name">
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-lg btn-primary">
+                    Submit
+                  </button>
+                </div>
             </form>
         </div>
     </div>
@@ -318,9 +364,10 @@ Channels
 
 如果act_user不是None，即当前用户已经登录，那就显示另一套内容：本user的前次访问频道，和全部频道列表。具体在[频道列表](#频道列表)里讲。
 
-到application.py看看login路由定义了些什么。
+现在到application.py看看login路由定义了些什么。
 
 ```python
+# application.py
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == "GET":
@@ -341,11 +388,23 @@ GET方法下，调用`get_channels()`函数，显示频道列表。如果用户�
 
 而POST方法下（也就是提交了inputName表单后），判断一下displayName里填的名字是否已经在全局对象users里，没有的话就创建一个。完事后重定向到get_channels绑定的路由，也就是频道列表。
 
+
+{{% admonition note "flash()函数" false %}}
+
+上面的Python代码用到了<code>flash(text, type)</code> 函数，它会发送一个<code>flash</code>请求到Flask前端，产生一个Bootstrap风格的告警。type只能是Bootstrap认识的"danger", "warning", "success", "info"这类。
+<br/><br/>
+为了让告警显示图标，用到了FontAwesome（_base.html模板里已经引入）。直接把<code>&lt;i class="xxx"&gt;</code> flash到前端，无法解析出图标，需要包一个<code>Markup()</code>，以markup对象的形式传递，前端解析后自动交给fontawesome.js处理。
+
+{{% /admonition %}}
+
+
+
 ### 注销
 
 有登录就有注销。_base.html里注销按钮已经绑定了logout路由，所以只要定义logout路由的后台绑定函数就行了。这里的注销也很简单，登出后清空`session`中的`act_user`对象，转跳回登录页。
 
 ```python
+# application.py
 @app.route("/logout")
 def logout():
     session.pop('act_user', None)
@@ -359,11 +418,15 @@ def logout():
 
 完成登录后，就进入频道列表，其实就是channels.html换了套内容呈现，包括前次访问的频道和全部频道列表。
 
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/channels.png" title="图 | 频道列表" %}}
+
 看一下后台python代码。分别对channels路由的GET和POST方法定义了两个函数`get_channels()`和`set_channels()`。
 
 ```python
+# application.py
 @app.route("/channels", methods=['GET'])
 def get_channels():
+    app.logger.info(str(channels))
     last_visit=users.get(session.get("act_user"))
     if last_visit not in channels.keys():
         last_visit = None
@@ -387,7 +450,8 @@ def set_channels():
                 """<i class='fa fa-2x fa-check-square-o'></i>
                 The new channel %s has been created.""" % (new_channel)),
                 'success')
-            channels[new_channel] = {"created": datetime.datetime.now(), "chats":[]}
+            channels[new_channel] = {"created": datetime.datetime.now(), 
+                "max_id": 0, "chats":{}}
     else:
         flash(Markup(
             """<i class='fa fa-2x fa-warning'></i>
@@ -397,10 +461,14 @@ def set_channels():
 
 GET方法下，从全局对象`users`里取到上次访问的频道名，存入last_visit。假如last_visit不在`channels`里，last_visit覆写为None。把全局channels的键和created值取出来拼成列表channels，再把这个channels连同last_visit都发送给[channels.html模板](#channels_html)解析渲染。回顾模板里的代码，如果last_visit或channels为None，对应的表格就只显示表头。
 
-POST方法下，服务器从表单里提取"new_channel"。假如new_channel在全局对象channels里已经存在，就flash甩个错误警报。假如不存在，那就往channels里插入一个新列表，新频道就生成了。最后转跳回channels.html，实现刷新。
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/last_visit.png" title="图 | 上次访问的频道" %}}
 
+POST方法下，服务器从表单里提取"new_channel"。假如new_channel在全局对象channels里已经存在，就`flash`甩个错误警报。假如不存在，那就往channels里插入一个新字典（包含'created'、'max_id'和'msg'字典)，新频道就生成了。最后转跳回channels.html，实现刷新。
+
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/new_channel.png" title="图 | 创建频道" %}}
 
 ### 频道明细
+
 
 点击频道名，就进到频道明细。其实就是聊天室应用。和常规网络应用相比，它要解决两个特殊问题：
 
@@ -413,6 +481,7 @@ POST方法下，服务器从表单里提取"new_channel"。假如new_channel在�
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/channel.html -->
 {% extends "_base.html" %}
 
 {% block title %}
@@ -429,36 +498,54 @@ Channel {{ channel }}
         {% raw -%}
         <td width="10%">
             {{#if same_user }}
-                <span data-class="post_user" style='color:dodgerblue'>{{ post_user }}</span>
+                <span data-class="post_user" style='color:dodgerblue'>
+                  {{ post_user }}
+                </span>
             {{ else }}
-                <span data-class="post_user" style='color:lightsalmon'>{{ post_user }}</span>
+                <span data-class="post_user" style='color:lightsalmon'>
+                  {{ post_user }}
+                </span>
             {{/if}}
         </td>
         <td width="20%">
             {{#if same_user }}
-                <span data-class="post_time" style='color:dodgerblue'>{{ post_time }}</span>
+                <span data-class="post_time" style='color:dodgerblue'>
+                  {{ post_time }}
+                </span>
             {{ else}}
-                <span data-class="post_time" style='color:lightsalmon'>{{ post_time }}</span>
+                <span data-class="post_time" style='color:lightsalmon'>
+                  {{ post_time }}
+                </span>
             {{/if}}
         </td>
         <td width="auto">
             {{#if same_user }}
-                <span data-class="post_msg" style='color:dodgerblue'>{{ post_msg }}</span>
-                <button data-class="del" style="float:right" class="btn btn-sm btn-danger">Delete</button>
+                <span data-class="post_msg" style='color:dodgerblue'>
+                  {{ post_msg }}
+                </span>
+                <button data-id="{{ post_id }}" data-class="del" style="float:right"
+                 class="btn btn-sm btn-danger"">Delete</button>
             {{ else }}
-                <span data-class="post_msg" style='color:lightsalmon'>{{ post_msg }}</span>
+                <span data-class="post_msg" style='color:lightsalmon'>
+                  {{ post_msg }}
+                </span>
             {{/if}}
         </td>
         {%- endraw %}
     </tr>
 </script>
 
-<script type="text/javascript" src="{{ url_for('static', filename='js/chat.js') }}"></script>
 <script type="text/javascript">
+    var act_user = decodeURI("{{ act_user }}");
+    var act_channel = decodeURI("{{ channel }}");
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelector("#msgTbl").innerHTML = format_chats({{ chats|tojson }}, '{{ act_user }}');
     });
 </script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}
+
+{% block control %}
 {% endblock %}
 
 {% block disp %}
@@ -481,9 +568,12 @@ Channel {{ channel }}
 <div class="container">
     <div class="form-group" id="inputMsg">
         <label for="msg" class="sr-only">Input your message</label>
-        <textarea id="msg" name="msg" class="form-control" placeholder="Input your message" rows="4" width="75%"></textarea>
+        <textarea id="msg" name="msg" class="form-control" placeholder="Input your message" 
+         rows="4" width="75%"></textarea>
         <label for="send" class="sr-only">Send</label>
-        <button id="send" type="submit" class="btn btn-md btn-primary">Send (Shift+Enter)</button>
+        <button id="send" type="submit" class="btn btn-md btn-primary">
+          Send (Shift+Enter)
+        </button>
         <a href="/channels">&nbsp;&nbsp;&gt;&gt;&gt;Go back to channel list.</a>
     </div>
 </div>
@@ -493,39 +583,65 @@ Channel {{ channel }}
 
 在channel.html模板中，script块里引入一大堆JS。比如用来动态生成HTML内容的handlebars.js，和处理socket的socket.io.js。disp块里定义了显示对话的表格"tbl_chat"，其中tbody留空，赋个id="msgTbl"。
 
-handlebars模板有一些特殊的语法规范，比如要转义的部分需要加<!-- {% raw %} -->{% raw -%}{%- endraw %}<!-- {% endraw %} -->标签、控制结构用{{#if}}{{else}}{{/if}}。它能解析变量，动态合成HTML。
+<!-- {% raw %} -->
+handlebars模板有一些特殊的语法规范，比如要转义的部分需要加{% raw -%}...{%- endraw %} 而标签、控制结构用{{#if}}...{{else}}...{{/if}}。它能解析变量，动态合成HTML。上面代码里的handlebars模板主要是根据act_user和发帖人是否为同一人，显示为不同的颜色。
+<!-- {% endraw %} -->
 
-html模板里直接嵌入一段JS监听代码，当加载页面时，提取chats和act_user，填充到tbody（也就是msgTbl）。chats要加管道函数tojson，把文本转成json。代码如下：
+html模板里直接嵌入一段JS监听代码，当加载页面时，提取chats和act_user，填充到tbody（也就是#msgTbl）。就是这段：
 
 <!-- {% raw %} -->
 ```javascript
+var act_user = decodeURI("{{ act_user }}");
+var act_channel = decodeURI("{{ channel }}");
 document.addEventListener('DOMContentLoaded', () => {
-	document.querySelector("#msgTbl").innerHTML = format_chats({{ chats|tojson }}, '{{ act_user }}');
+    document.querySelector("#msgTbl").innerHTML = format_chats({{ chats|tojson }}, '{{ act_user }}');
 });
 ```
 <!-- {% endraw %} -->
 
-这段代码用到了`format_chats()`函数。这是个自定义函数，从chat.js里加载：
+{{% admonition tip "注意" %}}
+chats用tojson函数处理，把序列化的文本转成json。在Flask模板里，调用函数的形式是<code>对象|方法</code>，而不是传统的<code>函数(参数)</code>形式。
+{{% /admonition %}}
+
+这里定义了两个变量：act_user和act_channel，把当前线程的用户名和当前频道从html模板传到后面引入的javascript里，也就是[chat.js](https://github.com/madlogos/edx_cs50/blob/master/project2/static/js/chat.js)。
+
+这段JS代码用到了`format_chats()`函数。这是个自定义函数，从chat.js里加载：
 
 ```javascript
+/* static/js/chat.js */
 // template for chatPost
 const template = Handlebars.compile(document.querySelector('#chatPost').innerHTML);
-var act_user = "";
-var act_channel = "";
 
 function format_chats(json_data, act_user=act_user){
+    console.log(JSON.stringify(json_data));
+    /* json_data is a dict */
     var output = '';
-    json_data.forEach(function(sub_json) {
-        const rslt_date = new Date(sub_json[1]);
-        const rslt = template({'post_user': decodeURI(sub_json[0]),
-            'post_time': format_date(rslt_date), 
-            'post_msg': decodeURI(sub_json[2]),
-            'same_user': decodeURI(sub_json[0]) == act_user});
+    Object.keys(json_data).forEach(function(key) {
+        const rslt_date = new Date(json_data[key]['time']);
+        const rslt = template({
+            'post_id': key,
+            'post_user': decodeURI(json_data[key]['user']),
+            'post_time': format_date(rslt_date),
+            'post_msg': decodeURI(json_data[key]['msg']),
+            'same_user': decodeURI(json_data[key]['user']) == act_user});
         output += rslt;
     });
     return output;
 };
+```
 
+template对象得先用Handlebars编译一下，绑定handlebars模板对象chatPost的innerHTML，把不同的变量(post_id, post_user...)json喂给template，就能编译产生一个个实例。
+
+`format_chats()`负责将json数据套入[channel.html模板](#channel_html) 中的handlebars模板"chatPost"里，解析参数后生成相应的html代码。这个输入参数json结构是固定的，包含post_user、post_time、post_msg，也就是全局对象channels里每个channel中的chats字典。
+
+{{% admonition note "要点" false %}}
+非常英明地用了<code>decodeURI()</code>和<code>encodeURI()</code>函数，发到服务器的数据都先编码，接到服务器数据都先解码，这样用中文时就不会乱码了。
+{{% /admonition %}}
+
+在格式化日期时，用到了另外两个函数`format_date()`和`lead_zero()`。也定义在chat.js里。
+
+```javascript
+/* static/js/chat.js */
 function format_date(date){
     const yr = date.getYear() + 1900;
     const mo = date.getMonth() + 1;
@@ -535,7 +651,7 @@ function format_date(date){
     const se = date.getSeconds(); 
     const ms = date.getMinutes();
     return yr + "-" + lead_zero(mo) + "-" + lead_zero(dt) + " " +
-        lead_zero(hr) + ":" + lead_zero(mi) + ":" + lead_zero(se) + 
+        lead_zero(hr) + ":" + lead_zero(mi) + ":" + lead_zero(se) +
         "." + lead_zero(ms, 3);
 };
 
@@ -543,52 +659,14 @@ function lead_zero(num, digits=2){
     /* put zeros in front the num */
     return (Array(digits).join(0) + num).slice(-digits);
 };
-
-function format_tz_offset(offset_min){
-    const sign = (offset_min < 0) ? '+' : '-';
-    const hr = Math.abs(offset_min) / 60;
-    const mi = Math.abs(offset_min) % 60;
-    return sign + lead_zero(hr) + ":" + lead_zero(mi);
-};
 ```
 
-template对象得先用Handlebars编译一下，绑定handlebars模板对象chatPost的innerHTML，把不同的变量json喂给template，就能产生一个个实例。act_user和act_channel指当前用户和频道，起始时置空。
+不这样处理也可以，Javascript会按默认的格式渲染日期。
 
-- `format_chats()`负责将json数据套入[channel.html模板](#channel_html) 中的handlebars模板"chatPost"里，解析参数后生成相应的html代码。这个输入参数json结构是固定的，包含post_user、post_time、post_msg，也就是全局对象channels里每个channel中的chats字典。
-	- 非常英明地用了`decodeURI()`和`encodeURI()`函数，发到服务器的数据都先编码，接到服务器数据都先解码，这样用中文时就不会乱码了。
-- `format_date()`是一个整形函数，把日期输出为mmmm-yy-dd hh:mm:ss的标准格式。
-	- `lead_zero()`是另一个整形函数，在数字前加零补位
-- `format_tz_offset()`生成时区，以+/-hh:mm的形式输出，比如北京时间就是+08:00，后面有用。
-
-
-先创建socket连接。和服务器实现连接(`on('connect')`)后，服务器会发一个"send username"请求，把当前用户名和当前频道发到客户端。客户端接到"send username"请求，就能获得act_user和act_channel，用于后续的解析计算。
+回过头再看'channel/<channel>'路由的代码：
 
 ```python
-@socketio.on("connect")
-def send_username():
-    emit('send username', {'act_user': session.get('act_user'), 
-         'act_channel': users.get(session.get('act_user'))})
-```
-
-前端JS里，页面监听代码里有一段用来处理"send username"请求：
-
-```javascript
-document.addEventListener('DOMContentLoaded', () => {
-	/* Some other codes here */
-	
-	socket.on('send username', data => {
-        // console.log(JSON.stringify(data));
-        act_user = decodeURI(data.act_user);
-        act_channel = decodeURI(data.act_channel);
-    });
-	
-	/* Some other codes here */
-}
-```
-
-channel/<channel>路由的代码：
-
-```python
+# application.py
 @app.route("/channel/<channel>", methods=['GET'])
 def get_channel(channel):
     if session.get('act_user') is None:
@@ -596,7 +674,7 @@ def get_channel(channel):
             """<i class='fa fa-2x fa-exclamation-circle'></i>
             You are not logged in."""), 'danger')
         return redirect(url_for("index"))
-    
+
     users[session.get('act_user')] = channel
     return render_template(
         "channel.html", act_user=session.get("act_user"), channel=channel,
@@ -608,9 +686,13 @@ def get_channel(channel):
 
 ### 发消息
 
-当点击<kbd>send</kbd>，客户端就发一个"send msg"请求，把json`{'user': encodeURI(act_user), 'time': post_time, 'msg': encodeURI(msg), 'channel': encodeURI(act_channel)}`发射(socket.emit)到服务器，交给flask_socketio处理。
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/chatting.png" title="图 | test1和test2在频道里聊天" %}}
 
+当点击<kbd>send</kbd>，客户端就发一个"send msg"请求，把json`{'user': encodeURI(act_user), 'time': post_time, 'msg': encodeURI(msg), 'channel': encodeURI(act_channel)}` "发射"(`socket.emit`)到服务器，交给flask_socketio处理。
+
+<a name="chatjs"></a>
 ```javascript
+/* static/js/chat.js */
 document.addEventListener('DOMContentLoaded', () => {
     /* connect to socket */
     var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port);
@@ -624,19 +706,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 'msg': encodeURI(msg), 'channel': encodeURI(act_channel)});
         };
     });
-    
-	/* 'send username' codes */
 
     socket.on('emit msg', data => {
-        const posttime = new Date(data.time);
-        // console.log(JSON.stringify(data));
-        const content = template(
-            {'post_user': decodeURI(data.user), 'post_time': format_date(posttime), 
-             'post_msg': decodeURI(data.msg), 'same_user': decodeURI(data.user)==act_user});
-        document.querySelector("#msgTbl").innerHTML += content;
-        document.querySelector("#msg").value = '';
-        /* scroll to the page bottom */
-        window.scrollTo(0, document.body.scrollHeight);
+        console.log('emit msg: ' + JSON.stringify(data));
+        if (act_channel == data.channel){
+            const posttime = new Date(data.time);
+            const content = template(
+                {'post_id': data.id, 'post_user': decodeURI(data.user), 
+                 'post_time': format_date(posttime), 
+                 'post_msg': decodeURI(data.msg), 
+                 'same_user': decodeURI(data.user)==act_user});
+            document.querySelector("#msgTbl").innerHTML += content;
+            document.querySelector("#msg").value = '';
+            /* scroll to the page bottom */
+            window.scrollTo(0, document.body.scrollHeight);
+        };
     });
 });
 ```
@@ -644,27 +728,40 @@ document.addEventListener('DOMContentLoaded', () => {
 服务器接到这个"send msg"请求后，怎么处理呢？看application.py：
 
 ```python
+# application.py
 @socketio.on("send msg")
 def emit_msg(data):
+    # if msg is blank, do not emit
     if data['msg'] != '':
         channel = urllib.parse.unquote(data['channel'])
         chats = channels[channel]['chats']
-        chats.append([data['user'], data['time'], data['msg']])
+        id = channels[channel]['max_id']
+        chats[str(id)] = {'user': data['user'], 'time': data['time'], 
+            'msg': data['msg']}
+        channels[channel]['max_id'] += 1
         if len(chats) > 100:
             chats = chats[(len(chats)-100):]
         channels[channel]['chats'] = chats
+
         emit('emit msg', 
-             {'user': data['user'], 'time': data['time'], 'msg': data['msg']},
-             broadcast=True)
+             {'id': id, 'user': data['user'], 'time': data['time'], 
+              'msg': data['msg'], 'channel': channel}, broadcast=True)
 ```
 
-假如"send msg"请求数据不为空，那就各种解析：解析出channel、chats（只保留最后100条），打包成`{'user': data['user'], 'time': data['time'], 'msg': data['msg']}`这样格式的json，发射(emit)回客户端。这里设`broadcast=True`，其他聊天室的客户端也都会通过广播机制接到这些数据，并通过ajax更新页面内容。
+假如"send msg"请求数据不为空，那就各种解析：解析出channel、chats（只保留最后100条），打包成`{'id': id, 'user': data['user'], 'time': data['time'], 'msg': data['msg'], 'channel': channel}`这样格式的json，发射(emit)回客户端。这里设`broadcast=True`，其他聊天室的客户端也都会通过广播机制接到这些数据，并通过JS实现页面内更新。
 
-而JS中，`socket.on('emit msg')`代码会将从服务器收到的广播数据套进handlebars模板里解析，再拼合成HTML填充到msgTbl里，同时清空输入文本框，自动定位到页面底部。
+而JS中，`socket.on('emit msg')`部分的[代码](#chatjf)会将从服务器收到的广播数据套进handlebars模板里解析，再拼合成HTML填充到'#msgTbl'里，同时清空输入文本框，自动定位到页面底部。
+
+{{% admonition note "要点" false %}}
+这里，加了一个判断。只有act_channel和从前端收到的data['channel']相同，才渲染handlebars模板，更新页面。不加这条判断的话，就会发生灾难性“串台”现象，任何其他频道的新增消息，都会被广播到其他频道里。
+{{% /admonition %}}
+
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/dif_channel.png" title="图 | 不同频道不会'串台'" %}}
 
 为了方便输入，设置为<kbd>Shift+Enter</kbd>发送消息。这需要一段键盘事件监听代码，只要msg文本框里出现shift+enter，就阻断默认动作，触发<kbd>send</kbd>的点击事件。
 
 ```javascript
+/* static/js/chat.js */
 window.onload = function(){
     const msgArea = document.getElementById("msg");
     msgArea.addEventListener('keypress', evt => {
@@ -680,52 +777,47 @@ window.onload = function(){
 
 由于定义了`same_user`变量，因此handlebars在拼装时，会根据消息作者是否与当前用户相同，在对应的消息后加<kbd>删除</kbd>按钮。这就避免了误删。
 
-删除自己的消息是通过另一端监听代码实现的，原理很简单，定位target的父元素，调用remove()方法：
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/del_msg.png" title="图 | 只能删除自己发的消息" %}}
+
+删除自己的消息是通过另一端监听代码实现的，原理很简单，定位target的父元素，调用`remove()`方法：
 
 ```javascript
+/* static/js/chat.js */
 document.addEventListener("click", evt => {
     var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port);
     const tgt = evt.target;
     if (tgt.dataset.class === 'del'){
-        const tz_offset = new Date().getTimezoneOffset();
         const elem = tgt.parentElement.parentElement;
-        const elem_user = elem.cells[0].innerText;
-        const elem_time = new Date(elem.cells[1].innerText.replace(/\s/g, 'T') +
-            format_tz_offset(tz_offset));
-        const output = {'user': encodeURI(elem_user), 
-            'time': elem_time, 'channel': encodeURI(act_channel)};
-        // console.log(JSON.stringify(output));
         elem.remove();
-        socket.emit("del msg", output);
+        socket.emit("del msg", {'channel': encodeURI(act_channel), 
+                                'id': tgt.dataset.id});
     };
 });
 ```
 
-因为没有数据库，所以并没有考虑设置主键。这带来一个问题，前端删除一条消息，怎么同步到服务器呢？如果不能从服务器同步删除，下次回来，这条消息还在，多尴尬。我构造了一个字典`{'user': encodeURI(elem_user), 'time': elem_time, 'channel': encodeURI(act_channel)}`，回传给服务器。服务器校验用户、时间和频道条件，从channels里删掉对应的消息。
+代码先通过parentElement定位到删除按钮所对应的这条消息，从页面中删除。同时，`socket.emit`一个字典`{'channel': xxx, 'id': xxx}`给服务器，告诉它要删除的消息是哪个频道、id是多少。
 
-服务器端的处理代码：
+服务器端收到"del msg"请求后，收到的data就是个长度为2的字典。这样处理：
 
 ```python
+# application.py
 @socketio.on("del msg")
 def del_msg(data):
     channel = urllib.parse.unquote(data['channel'])
     chats = channels[channel]['chats']
-    app.logger.info(str(chats))
-    for i in range(len(chats)):
-        app.logger.info([data['user'], data['time']])
-        if chats[i][0] == data['user'] and chats[i][1] == data['time']:
-            channels[channel]['chats'].pop(i)
-            break
+    app.logger.info(str(chats) + "\nDel: " + str(data))
+    channels[channel]['chats'].pop(data['id'])
 ```
 
-每次删除都要遍历整个字典，多字段匹配。感觉效率堪忧。还是有必要考虑一下主键设计。
+先解码channel（因为发过来前先进行了`encodeURI`），直接从channels对象的当前频道字典里，把键等于data['id']的字典整个pop掉。
 
 
 ### 其他
 
-`flash`自动消失和star-rating需要专门适配一些javascript。在main.js里。
+`flash`自动消失需要专门适配一些javascript。在main.js里，用jQuery实现。
 
 ```javascript
+/* static/js/main.js */
 $(document).ready(function () {
     /* alert-dismissable dismiss automatically in 3s */
     window.setTimeout(function() {
@@ -743,5 +835,5 @@ $(document).ready(function () {
 ---
 
 <!-- {% raw %} -->
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
 <!-- {% endraw %} -->

@@ -16,9 +16,17 @@ outputs:
 ---
 
 {{% admonition abstract 摘要 %}}
-记载了「通往全栈之路上」的一则edx慕课作业：用Flask框架写一个图书查询的web应用。
+记载了「通往全栈之路上」的一则edx慕课作业：用Flask框架写一个图书查询的web应用。<br/>
 【honor code警告】如果你刚巧也注册了这门课，千万不要抄。
 {{% /admonition %}}
+
+{{% admonition warning 注意 %}}
+如无法显示视频，可能被作为不安全脚本屏蔽。在浏览器地址栏里点击安全提示图标，允许运行不安全的脚本。
+{{% /admonition %}}
+
+[成品效果视频](https://v.youku.com/v_show/id_XNDQzMzA5MzQ4OA==.html?spm=a2hzp.8244740.0.0) @ 优酷：
+
+<iframe height=498 width='100%' src='https://player.youku.com/embed/XNDQzMzA5MzQ4OA==' frameborder=0 'allowfullscreen'></iframe>
 
 ## 缘起
 
@@ -61,9 +69,11 @@ Flask最好的好处是可以多快好省地做网站，迅速实现一个原型
 
 建三张表，`mbr`，`book`和`review`。`review`表里`mbr_id`和`book_id`分别外键关联到`mbr`和`book`。
 
-> 为啥不用`user`？因为postgresql不同意我用这个表名，所以在sqlite里也这么干。
+{{% admonition question "为啥不用'user'?" %}}
+因为postgresql不同意我用这个表名，所以在sqlite里也这么干。
+{{% /admonition %}}
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/db.png" title="图 | 数据库设计" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/db.png" title="图 | 数据库设计" %}}
 
 
 ```sql
@@ -89,6 +99,10 @@ CREATE TABLE IF NOT EXISTS review (
 );
 ```
 
+{{% admonition info "备注" %}}
+以上是sqlite的建表DDL，如果用PostgreSQL，语句略有不同。
+{{% /admonition %}}
+
 再把`books.csv`里的数据导进去。
 
 我是坚定的pandas粉，所以直接把csv读进pandas再一口气灌进sqlite里。面对postgresql我也这么干。传统的方法是用csv包一行一行扫描，再写入数据库。我是向量运算的刀山火海里捶打出来的，轻易才不用循环。
@@ -96,6 +110,7 @@ CREATE TABLE IF NOT EXISTS review (
 [import_local.py](https://github.com/madlogos/edx_cs50/blob/master/project1/import_local.py)部分代码如下。如果用heroku上的PostgreSQL，则用[import.py](https://github.com/madlogos/edx_cs50/blob/master/project1/import.py)。
 
 ```python
+# import_local.py
 import sqlite3
 import pandas as pd
 conn = sqlite3.connect('db.db')
@@ -118,24 +133,27 @@ conn.close()
 
 ### 项目结构
 
-[源代码托管于Github](https://github.com/madlogos/edx_cs50/tree/master/project1)
+{{% admonition info "源代码托管于Github" %}}
+<a href="https://github.com/madlogos/edx_cs50/tree/master/project1">戳这里看源码</a>
+{{% /admonition %}}
 
 ```
+project1
 |-- application.py
-|-- + static
-|   |-- + css
-|   |   |-- style.css
-|   |   \-- star-rating.min.css
-|   \-- + js
-|       |-- main.js
-|       \-- star-rating.min.js
-|-- + templates
-|   |-- base.html
-|   |-- book.html
-|   |-- index.html
-|   |-- login.html
-|   \-- register.html
-\-- db.db
+|--+ static
+|  |--+ css
+|  |  |-- style.css
+|  |  `-- star-rating.min.css
+|  `--+ js
+|     |-- main.js
+|     `-- star-rating.min.js
+|--+ templates
+|  |-- base.html
+|  |-- book.html
+|  |-- index.html
+|  |-- login.html
+|  `-- register.html
+`-- db.db
 ```
 
 这个应用比较简单，所以结构很扁平。
@@ -153,14 +171,15 @@ conn.close()
 <!-- {% raw %} -->
 - 样式主要靠Bootstrap
 - body部分放了几个通用块(block)：head, flash, disp, control, misc。用jinja2结构`{% block xxx %}{% endblock %}`来占位。
-    - 块里面基本都没有进一步定义。只是给导航条加了点功能，如果当前线程有用户登着，就显示个注销按钮，否则就没有。
-    - flash块比较特别，定义了一个比较通用的flash渲染宏，到时候只需要在后台.py里套用`flash`函数就能实现告警框。
-    - 后续写其他模板时，引用(extend) base.html就行了。
-    
+  - 块里面基本都没有进一步定义。只是给导航条加了点功能，如果当前线程有用户登着，就显示个注销按钮，否则就没有。
+  - flash块比较特别，定义了一个比较通用的flash渲染宏，到时候只需要在后台.py里套用`flash`函数就能实现告警框。
+  - 后续写其他模板时，引用(extend) base.html就行了。
+
 <!-- {% endraw %} -->
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang='en'>
     <head>
@@ -187,9 +206,12 @@ conn.close()
                         <a class="navbar-brand mb-0" href="#">Book Review</a>
                     </div>
                     {% if act_user is not none %}
-                    <form class="navbar-form navbar-right" action="{{ url_for('sign_off') }}" method="get">
+                    <form class="navbar-form navbar-right" 
+                     action="{{ url_for('sign_off') }}" method="get">
                         <span>Welcome, {{ act_user['username'] }}.&nbsp;&nbsp;</span>
-                        <button id="logout" class="btn btn-default btn-sm">Log out</button>
+                        <button id="logout" class="btn btn-default btn-sm">
+                          Log out
+                        </button>
                     </form>
                     {% endif %}
                 </div>
@@ -199,7 +221,9 @@ conn.close()
                 {% if messages %}
                     {% for category, message in messages %}
                     <div class="alert alert-{{ category }} alert-dismissable">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <button type="button" class="close" data-dismiss="alert">
+                          &times;
+                        </button>
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -235,10 +259,14 @@ conn.close()
 ```
 <!-- {% endraw %} -->
 
-对应地，在application.py里定义一些基本代码。"db.db"被export到环境变量`DATABASE_URL`，为了避免thread不一致问题，写成"sqlite:////absolute/path/to/db?check_same_thread=false"。application.py被export到环境变量`FLASK_APP`，方便后面直接命令行`flask run`启动应用。
+对应地，在application.py里定义一些基本代码。
+
+- "db.db"被export到环境变量`DATABASE_URL`，为了避免thread不一致问题，写成"sqlite:////absolute/path/to/db?check_same_thread=false"。
+- application.py被export到环境变量`FLASK_APP`，方便后面直接命令行`flask run`启动应用。
 
 ```python
 # -*- coding: UTF-8 -*-
+# application.py
 import os
 import requests
 from flask import Flask, flash, jsonify, render_template, request, \
@@ -273,7 +301,9 @@ def remove_session(ex=None):
 
 ### 登录
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/sign-in.png" title="图 | 登录页" %}}
+访问首页，先跳转到登录界面。
+
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/sign-in.png" title="图 | 登录界面" %}}
 
 登录页[login.html](https://github.com/madlogos/edx_cs50/blob/master/project1/templates/login.html)很简单，首先继承base.html的元素，然后在control块里放一个`form-signin`控件。套了一些bootstrap的元素。action绑定sign_in，也就是`signin()`函数。
 
@@ -281,6 +311,7 @@ def remove_session(ex=None):
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/login.html -->
 {% extends "base.html" %}
 
 {% block title %}
@@ -311,6 +342,7 @@ Sign In
 主路由下，如果当前session没有用户登录，就转跳去登录页/login，否则直接进书籍列表页/index。
 
 ```python
+# application.py
 @app.route("/", methods=['GET'])
 def home():
     """Home page
@@ -321,10 +353,11 @@ def home():
         return render_template("index.html", act_user=session.get('act_user'))
 ```
 
-如果进登录页，那么'GET'方法下跟主路由差不多逻辑，'POST'方法下（点按钮触发POST），就要校验用户名密码了。成功就进书籍列表，假如不对，就`flash`一个错误来。利用application.py里定义的`sign_in`函数和模板form中的`url_for`函数，就把后端功能绑定到前端了。
+如果进登录页，那么'GET'方法下跟主路由差不多逻辑，'POST'方法下（点按钮触发POST），就要校验用户名密码了。成功就进书籍列表，假如不对，就`flash`一个错误来。利用application.py里定义的`sign_in()`函数和模板form中的`url_for()`函数，就把后端功能绑定到前端了。
 
 
 ```python
+# application.py
 @app.route("/login", methods=['GET', 'POST'])
 def sign_in():
     """Sign in
@@ -360,6 +393,7 @@ Flask是用SQLAlchemy的。SQLAlchemy是很高效的ORM工具，坊间一直认�
 有登陆就有注销。反正base.html里注销按钮已经绑定了logout路由，所以只要定义logout路由的后台绑定函数就行了。登出后，清空`session['act_use']`对象，回到登录页。
 
 ```python
+# application.py
 @app.route('/logout', methods=['GET'])
 def sign_off():
     session.pop('act_user', None)
@@ -372,12 +406,13 @@ def sign_off():
 
 ### 注册
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/register.png" title="图 | 注册页" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/register.png" title="图 | 注册页" %}}
 
 注册页[register.html](https://github.com/madlogos/edx_cs50/blob/master/project1/templates/register.html)和登录页差不多。
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/register.html -->
 {% extends "base.html" %}
 
 {% block title %}
@@ -407,6 +442,7 @@ Sign Up
 考究点的话当然还要有反机器人的措施。我是那种考究的人嘛？作业又没这要求，就不贴金了。
 
 ```python
+# application.py
 @app.route("/signup", methods=['GET', 'POST'])
 def sign_up():
     """Sign up
@@ -448,7 +484,7 @@ def sign_up():
 
 ### 检索书籍
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/books.png" title="图 | 初始载入空列表" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/books.png" title="图 | 初始载入空列表" %}}
 
 登录进去后，进入真正的[index.html](https://github.com/madlogos/edx_cs50/blob/master/project1/templates/index.html)页。通过三个文本框联合查询。在block disp部分，写一个jinja2宏循环，把books这个对象逐个解析出来填进表格里。如果什么条件都不给，那就会一口气查出5000条来。
 
@@ -458,7 +494,7 @@ def sign_up():
 
 Flask虽然好上手，但什么功能都要自己写，比较上头。好在还是有好心人做了不少插件。比如这款小巧的[Flask_Paginate](https://pythonhosted.org/Flask-paginate/)。
 
-```
+```bash
 pip install flask-paginate
 ```
 
@@ -468,6 +504,7 @@ pip install flask-paginate
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/books.html -->
 {% extends "base.html" %}
 
 {% block title %}
@@ -530,7 +567,7 @@ Books
 ```
 <!-- {% endraw %} -->
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/pagination.png" title="图 | 所有书籍分页显示" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/pagination.png" title="图 | 所有书籍分页显示" %}}
 
 #### 后端
 
@@ -538,7 +575,9 @@ Books
 
 我不太会写查询条件的复合拼接，用了列表解析式(list comprehension)。这是python里我最喜欢的语法。
 
-假如isbn='123'，title='war'，author='rider'，那么`["%s LIKE '%%%s%%'" % (x, y) for x, y in (('isbn', isbn), ('title', title), ('author', author)) if y is not None and y != '']`的结果就是这么一个列表:
+<!-- {% raw %} -->
+{{% admonition example "举个栗子" %}}
+假如isbn='123'，title='war'，author='rider'，那么`["%s LIKE '%%%s%%'" % (x, y) for x, y in (('isbn', isbn), ('title', title), ('author', author)) if y is not None and y != '']`的结果就是这么一个列表: <br/>
 
 ```python
 ["isbn LIKE '%123%'", "title LIKE '%war%'", "author LIKE '%rider%'"]
@@ -546,9 +585,13 @@ Books
 
 一下就把三个查询条件都生成好了。Very pythonic.
 
+{{% /admonition %}}
+<!-- {% endraw %} -->
+
 定义了一个`subset_rec()`函数，对列表进行切片，用来对查询结果分页。最后几行是人工生成分页对象pagination。最后把pagination和分页筛出的记录返回给前端。随着用户点击翻页，pagination和page_books都会跟着更新。
 
 ```python
+# application.py
 def subset_rec(rec, offset=0, per_page=20):
     return rec[offset: offset + per_page]
     
@@ -583,17 +626,19 @@ def index():
         pagination=pagination)
 ```
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/filtered_books.png" title="图 | 搜索标题含china的书籍" %}}
+书名搜索"china"，返回所有标题内含"china"的书。
+
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/filtered_books.png" title="图 | 搜索标题含china的书籍" %}}
 
 ### 书籍明细
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/book.png" title="图 | 书籍明细" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/book.png" title="图 | 书籍明细" %}}
 
 生成的书籍列表，可以点id访问明细。这里包含三部分：
 
 1. books.csv自带的信息 (book对象)
-1. 通过ISBN到Goodreads上查询的信息 (gr_data对象)
-1. 用户发布的评级评论 (review对象)
+1. 用ISBN到Goodreads上查询到的信息 (gr_data对象)
+1. 用户发布的评级、评论 (review对象)
 
 由于作业要求一个用户只能对一本书作评价，所以还有一个用来判断当前用户对此书评论数量的my_review对象。在前端模板里写一个条件，一旦my_review > 0，就禁用提交按钮。
 
@@ -601,6 +646,7 @@ def index():
 
 <!-- {% raw %} -->
 ```html
+<!-- templates/book.html -->
 {% extends "base.html" %}
 
 {% block title %}
@@ -662,23 +708,29 @@ def index():
     <h5>Submit your review comments.</h5>
     <label for="comment" class="sr-only">Input your review comments.</label>
     <textarea name="comment" class="form-control" rows="4" 
-        placeholder="Input your review comments for {{ book[1] }}. You can at most submit one comment for a book"></textarea>
+        placeholder="Input your review comments for {{ book[1] }}. You can at most submit one comment for a book">
+    </textarea>
     <label for="submit" class="sr-only">Submit</label>
     
     <label for="rating">Rating</label>
     <input id="rating" name="rating" class="rating"  min="0" max="5" step="1" 
         data-size="sm" value='0'>
     
-    <button id="submit" class="btn btn-lg btn-primary" 
-        {% if my_reviews > 0 %} disabled {% endif %}>Submit</button>
+    <button id="submit" class="btn btn-lg btn-primary" {% if my_reviews > 0 %} 
+     disabled {% endif %}>
+      Submit
+    </button>
 </form>
 {% endblock %}
 ```
 <!-- {% endraw %} -->
 
-后端做了很多工作。首先，定义一个`get_gr()`函数，用来读取Goodreads API。我用了Lantern，所以调用了Lantern的SOCKS代理翻墙访问。它能返回json串或者None。HTTP_PROXY和HTTPS_PROXY都要事先注册进PATH。
+可以看到，reviews是一个嵌套列表，每个review列表都是长度为5的列表。这个review的结构定义在后端代码里（`review_qry`)。
+
+后端做了很多工作。首先，定义一个`get_gr()`函数，用来读取Goodreads API。我用了Lantern，所以调用了Lantern的SOCKS代理翻墙访问。它能返回json串或者None。HTTP_PROXY和HTTPS_PROXY都要事先注册进PATH。key和secret原则上不能写进源代码里，我这里偷懒了。
 
 ```python
+# application.py
 def get_gr(isbn, api='review_counts', success_code=200):
     """Goodreads API data
     return json or None
@@ -710,6 +762,7 @@ def get_gr(isbn, api='review_counts', success_code=200):
 1. 分别拿到book，gr_data和review三处数据，丢到`index()`函数处理。
 
 ```python
+# application.py
 @app.route('/book/<int:book_id>', methods=['GET', 'POST'])
 def review(book_id):
     """Book detail
@@ -775,17 +828,18 @@ def review(book_id):
 
 这个插件本质上通过交互，获得一个评分数值。提交表单时，这个数值rating也被传到后端。
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/rate_a_book.png" title="图 | 给图书打分" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/rate_a_book.png" title="图 | 给图书打分" %}}
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/book_rated.png" title="图 | 打完分后按钮失效" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/book_rated.png" title="图 | 打完分后Submit按钮失效" %}}
 
 ### API
 
 自己定义一个API方法。当然，验证key和secret这种专业操作我就不弄了。
 
-在这里，我用`request.args.get()`方法取id，调用起来就变成<url_head>/api/book?id=xx，而不再是<url_head>/api/book/xx。
+在这里，我用`request.args.get()`方法取id，调用起来就变成`<url_head>/api/book?id=xx`的形式，而不再是默认的`<url_head>/api/book/xx`。
 
 ```python
+# application.py
 @app.route('/api/book', methods=['GET'])
 def api():
     if session.get('act_user') is None:
@@ -813,9 +867,9 @@ def api():
         return jsonify(rslt)
 ```
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/api_success.png" title="图 | API请求成功" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/api_success.png" title="图 | API请求成功" %}}
 
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/190916/api_fail.png" title="图 | API请求失败" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/0916/api_fail.png" title="图 | API请求失败" %}}
 
 
 ### 响应式布局
@@ -823,6 +877,7 @@ def api():
 参考bootstrap案例写了几个可有可无的@media选择器，**概念上**有响应式布局的意思了。效果如下。
 
 ```css
+/* static/css/style.css */
 .form-signin .form-control {
     margin: 10px auto 10px auto;
 }
@@ -878,9 +933,10 @@ main {
 
 ### 其他
 
-`flash`自动消失和star-rating需要专门适配一些javascript。在main.js里。
+`flash`自动消失和star-rating需要专门适配一些javascript，在main.js里。主要是一些jQuery。
 
 ```javascript
+/* static/js/main.js */
 $(document).ready(function () {
     /* alert-dismissable dismiss automatically in 4s */
     window.setTimeout(function() {
@@ -903,5 +959,5 @@ $(document).ready(function(){
 ---
 
 <!-- {% raw %} -->
-{{% figure src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
 <!-- {% endraw %} -->
