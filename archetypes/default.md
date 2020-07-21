@@ -19,6 +19,12 @@ toc: true
 contentCopyright: true
 reward: true
 mathjax: true
+flowchartDiagrams:
+  enable: false
+  options: ""
+sequenceDiagrams: 
+  enable: false
+  options: ""
 ---
 
 <!--more-->
