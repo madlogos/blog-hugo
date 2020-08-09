@@ -2,6 +2,11 @@
 
 echo -e "\033[0;32mDeploying updates to GitHub...\033[0m"
 
+# commit this change
+git add -A
+git commit -m "changes on `data`"
+git push origin master
+
 # Build the project.
 hugo -t even # if using a theme, replace by `hugo -t <yourtheme>`
 

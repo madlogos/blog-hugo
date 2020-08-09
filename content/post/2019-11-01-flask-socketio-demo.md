@@ -1,5 +1,5 @@
 ---
-title: edx作业：用flask建一个简易Web聊天室
+title: edX作业：用Flask建一个简易Web聊天室
 slug: flask-socketio-site-demo
 draft: false
 description: "edx慕课的作业：用flask框架构建一个简易的聊天室应用"
@@ -18,10 +18,6 @@ outputs:
 {{% admonition abstract 摘要 %}}
 记载了「通往全栈之路上」的一则edx慕课作业：用flask_socketio实现一个粗糙的聊天室。<br/>
 【honor code警告】如果你刚巧也注册了这门课，千万不要抄。
-{{% /admonition %}}
-
-{{% admonition warning 注意 %}}
-如无法显示视频，可能被作为不安全脚本屏蔽。在浏览器地址栏里点击安全提示图标，允许运行不安全的脚本。
 {{% /admonition %}}
 
 [成品效果视频](https://v.youku.com/v_show/id_XNDQzNzYyNDU4MA==.html?spm=a2h3j.8428770.3416059.1) @ 优酷：
@@ -469,7 +465,6 @@ POST方法下，服务器从表单里提取"new_channel"。假如new_channel在�
 
 ### 频道明细
 
-
 点击频道名，就进到频道明细。其实就是聊天室应用。和常规网络应用相比，它要解决两个特殊问题：
 
 1. 提交的信息要实时广播给其他所有用户，否则就不能算聊天室。
@@ -683,7 +678,6 @@ def get_channel(channel):
 
 先校验当前用户是否登录。没问题的话就渲染channel.html模板了。服务器从全局对象channels里提取该频道的对话消息chats发给客户端。客户端用`format_chats()`把chats解析后，套进handlebars模板，再呈现到表格里。
 
-
 ### 发消息
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2019/1101/chatting.png" title="图 | test1和test2在频道里聊天" %}}
@@ -691,6 +685,7 @@ def get_channel(channel):
 当点击<kbd>send</kbd>，客户端就发一个"send msg"请求，把json`{'user': encodeURI(act_user), 'time': post_time, 'msg': encodeURI(msg), 'channel': encodeURI(act_channel)}` "发射"(`socket.emit`)到服务器，交给flask_socketio处理。
 
 <a name="chatjs"></a>
+
 ```javascript
 /* static/js/chat.js */
 document.addEventListener('DOMContentLoaded', () => {
@@ -835,5 +830,5 @@ $(document).ready(function () {
 ---
 
 <!-- {% raw %} -->
-{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="50%" title="扫码关注我的的我的公众号" alt="扫码关注" %}}
+{{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/QRcode.jpg" width="30%" title="扫码关注我的公众号" alt="扫码关注" %}}
 <!-- {% endraw %} -->
