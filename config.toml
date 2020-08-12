@@ -107,7 +107,7 @@ copyright = "madlogos"     # default: author.name ↓        # 默认为下面�
 
   baiduPush = true        # baidu push                  # 百度
   baiduAnalytics = ""      # Baidu Analytics
-  baiduVerification = "f221e23428218df65adeefe00f85e7ed"   # Baidu Verification
+  baiduVerification = "k5CktWnwfR"   # Baidu Verification
   googleVerification = "lO7fVN8Jm2sjiBOcR2knmNBKjtWcxS6KbuZYl2yELwA"  # Google Verification         # 谷歌
 
   # Link custom CSS and JS assets
