@@ -1,4 +1,4 @@
-baseURL = "https://madlogos.github.io/"
+baseURL = "https://madlogos.gitee.io/"
 languageCode = ""
 defaultContentLanguage = "zh-cn"
 title = "Libido Chateau"
@@ -17,7 +17,7 @@ pygmentsCodefencesGuessSyntax = true
 hasCJKLanguage = true     # has chinese/japanese/korean ? # 自动检测是否包含 中文\日文\韩文
 paginate = 10             # 首页每页显示的文章数
 disqusShortname = "madlogos-gh"      # disqus_shortname
-googleAnalytics = ""      # UA-XXXXXXXX-X
+googleAnalytics = "UA-68964085-2"      # UA-XXXXXXXX-X
 copyright = "madlogos"     # default: author.name ↓        # 默认为下面配置的author.name ↓
 
 [author]                  # essential                     # 必需
@@ -105,9 +105,9 @@ copyright = "madlogos"     # default: author.name ↓        # 默认为下面�
 
   livereUID = ""            # LiveRe UID                  # 来必力
 
-  baiduPush = false        # baidu push                  # 百度
-  baiduAnalytics = ""      # Baidu Analytics
-  baiduVerification = ""   # Baidu Verification
+  baiduPush = true        # baidu push                  # 百度
+  baiduAnalytics = "madlogos"      # Baidu Analytics
+  baiduVerification = "f221e23428218df65adeefe00f85e7ed"   # Baidu Verification
   googleVerification = ""  # Google Verification         # 谷歌
 
   # Link custom CSS and JS assets
@@ -174,7 +174,7 @@ copyright = "madlogos"     # default: author.name ↓        # 默认为下面�
     options = ""            # default: "{theme: 'simple'}"
 
   [params.busuanzi]         # count web traffic by busuanzi                             # 是否使用不蒜子统计站点访问量
-    enable = false
+    enable = true
     siteUV = true
     sitePV = true
     pagePV = true
