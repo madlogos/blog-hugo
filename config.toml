@@ -106,7 +106,7 @@ copyright = "madlogos"     # default: author.name ↓        # 默认为下面�
   livereUID = ""            # LiveRe UID                  # 来必力
 
   baiduPush = true        # baidu push                  # 百度
-  baiduAnalytics = ""      # Baidu Analytics
+  baiduAnalytics = "f221e23428218df65adeefe00f85e7ed"      # Baidu Analytics
   baiduVerification = "k5CktWnwfR"   # Baidu Verification
   googleVerification = "lO7fVN8Jm2sjiBOcR2knmNBKjtWcxS6KbuZYl2yELwA"  # Google Verification         # 谷歌
 
