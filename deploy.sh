@@ -4,7 +4,7 @@ echo -e "\033[0;32mDeploying updates to GitHub...\033[0m"
 
 # commit this change
 git add -A
-git commit -m "changes on `data`"
+git commit -m "changes on `date`"
 git push origin master
 
 # Build the project.
