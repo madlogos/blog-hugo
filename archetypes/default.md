@@ -9,7 +9,7 @@ tags: []
 categories: []
 author: "迷幻主义搬砖号子"
 github: "madlogos"
-
+image: "favicon-32x32.png"
 # you can close something for this content if you open it in config.toml.
 comment: true
 show_comments: true
