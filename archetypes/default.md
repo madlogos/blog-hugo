@@ -20,10 +20,10 @@ contentCopyright: true
 reward: true
 mathjax: true
 flowchartDiagrams:
-  enable: false
+  enable: true
   options: ""
 sequenceDiagrams: 
-  enable: false
+  enable: true
   options: ""
 ---
 
