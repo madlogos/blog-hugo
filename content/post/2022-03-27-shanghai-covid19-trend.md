@@ -7,7 +7,7 @@ date: 2022-03-27
 lastmod: 2022-03-27
 tags: [新冠, 防控, 上海]
 keyword: ["新冠", "防控", "上海"]
-categories: [无题]
+categories: [时评]
 isCJKLanguage: true
 reward: true
 outputs:
