@@ -1,5 +1,5 @@
 ---
-title: 新冠「无症状」诊断标准：语言腐败
+title: 新冠「无症状」诊断标准：一种语言腐败
 slug: covid-diagnosis-asymptomatic
 draft: false
 description: "用于驱动共识的重要结论，到头来充满了术语游戏和语言腐败。不尊重基本事实，不理性归因，就不可能正确理解自己真实的处境，更不可能做出理智的决策。"
