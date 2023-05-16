@@ -63,7 +63,9 @@ C反应蛋白113。
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2023/04/ct-report-lung-2.jpg" width="60%" title="图 | 手机肺CT报告：序列贯览" %}}
 
-说起来连联影这种当红炸子鸡，销售业绩嘎嘎好，也没有召回之类破事，股价照样从最高点掉下来近一半了。还有啥好怨的。
+哎，友商牛逼。
+
+说起来，连联影这种当红炸子鸡，销售业绩嘎嘎虹，也没有召回之类破事，股价照样从最高点掉下来近一半了。还有啥好怨的。
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2023/04/ui-stock.jpg" width="100%" title="图 | 联影股价" %}}
 

@@ -5,3 +5,4 @@
 [submodule "ghblog"]
 	path = public
 	url = https://github.com/madlogos/madlogos.github.io.git
+	update = rebase
