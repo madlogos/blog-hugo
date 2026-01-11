@@ -1,7 +1,7 @@
 baseURL = "https://madlogos.github.io/"
 languageCode = ""
 defaultContentLanguage = "zh-cn"
-title = "Libido Chateau"
+title = "Libido Château"
 preserveTaxonomyNames = true
 enableRobotsTXT = true
 enableEmoji = true
