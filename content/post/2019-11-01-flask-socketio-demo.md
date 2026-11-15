@@ -40,8 +40,6 @@ outputs:
 6. 能记住频道，下次回来能立即进去
 7. 延伸功能：比如删除自己的消息，上传附件等
 
-<!--more-->
-
 ## 开工
 
 ### 准备
@@ -220,12 +218,10 @@ from flask_socketio import SocketIO, emit
 from jinja2 import Markup
 import logging
 
-
 app = Flask(__name__, static_folder="static")
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config['SESSION_TYPE'] = 'filesystem'
 socketio = SocketIO(app)
-
 
 users = dict()
 channels = dict()
@@ -239,6 +235,8 @@ def index():
 ```
 
 最后在\_\_main\_\_里加一点代码，配置日志输出。运行`python application.py`时，会自动运行这部分。如果继续用`flask run`，这部分不会自动运行。还会报警告，WebSocket无法启用，用Workzeug跑Flask-SocketIO。这是因为新版的Flask在服务端功能做了简化，不再支持WebSocket。
+
+<!-- more -->
 
 {{% admonition tip "注意" %}}
 部署到生产环境时，要记得把<code>app.debug</code>设为False。
@@ -425,7 +423,6 @@ def get_channels():
         "channels.html", act_user=session.get("act_user"), 
         channels=[{'name':k, 'created':channels[k]['created']} for k in channels], 
         last_visit=last_visit)
-
 
 @app.route("/channels", methods=['POST'])
 def set_channels():

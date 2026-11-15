@@ -50,8 +50,6 @@ outputs:
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/1128/yilianmengbi.jpg" title="蛤？这是啥？" %}}
 
-<!--more-->
-
 {{% admonition info 定义 %}}
 所谓现代化支付行号 (CNAPS)   
 
@@ -80,6 +78,8 @@ outputs:
 ### 首先，选型要精准
 
 上面提到的这两家都要输校验码，攻起来有门槛。所以退而求其次，发现一家[中原银行](http://www.zybank.com.cn/zyb/zh_CN/jshj/lhhquery.html)。
+
+<!-- more -->
 
 <!-- {% raw %} -->
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/1128/zybank.png" title="图 | 中原银行CNPAS查询页" alt="中原银行" %}}

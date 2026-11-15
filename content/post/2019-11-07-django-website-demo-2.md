@@ -67,8 +67,6 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Order, OrderAdmin)
 ```
 
-<!--more-->
-
 比如从admin.ModelAdmin继承一个ProductAdmin类出来，定义好list_display（显示哪些列)、list_filter（哪些列用来筛选）和list_editable（哪些列可以编辑）之类属性，再用`admin.site.register`把Product类注册到ProductAdmin上，admin页面就能管理Product模型了。非常方便。
 
 {{% admonition note "值得多说一句的是多对多关系" false %}}
@@ -218,6 +216,8 @@ function popupfun(prod_id){
 点单页面从[pick_product.html](https://github.com/madlogos/edx_cs50/blob/master/project3/templates/orders/pick_product.html)页面模板讲起。
 
 它继承的是_popup.html模板，根据后端传入的product对象的n_topping数量判断，是否要加载topping和addition列表。一旦加载，就显示这些附加物，和数量录入框。这些表单是动态生成的，所以我没有用forms模板的方法来实现。（不过StackOverflow上查了查，还是有实现方案的。）
+
+<!-- more -->
 
 <!-- {% raw %} -->
 ```html

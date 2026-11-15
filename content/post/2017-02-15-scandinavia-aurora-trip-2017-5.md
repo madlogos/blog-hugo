@@ -40,8 +40,6 @@ outputs:
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0215/001ZzLsRzy78OjDxothff.jpeg" width="100%" title="图：极光" alt="" %}}
 
-<!--more-->
-
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0215/001ZzLsRzy78OjF3rBX35.jpeg" width="100%" title="图：极光" alt="" %}}
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0215/001ZzLsRzy78OjGfiUw40.jpeg" width="100%" title="图：极光" alt="" %}}
@@ -75,6 +73,8 @@ outputs:
 {{% /admonition %}}
 
 我们不自驾，只有选公交。​本来42路1小时直达，结果周末42路只开到Eidkjosen，接下来要转755。坐上755，跟在挪威境内坐过的所有公交一样，没有报站，所以稀里糊涂地坐过了站。司机说，待会儿我还要开回去，要不到时候再载你们？我们连忙说，不了不了，我们就这儿下。
+
+<!-- more -->
 
 车上还有一对情侣，和我们一起上的车。他们没有下车，跟着司机坐到终点站，又坐了回去。我们看着他们绝尘而去，感到很纳闷。
 

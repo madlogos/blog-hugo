@@ -48,8 +48,6 @@ outputs:
 6. 浏览订单和订单明细
 7. 延伸功能：比如系统管理员在后台更新订单状态、用[Strip API](https://stripe.com/docs) 完成结算等
 
-<!--more-->
-
 ## 准备
 
 - 先要有Python（装了Anaconda）
@@ -132,8 +130,6 @@ project3
       `-- pick_product.html
 ```
 
-<!-- more -->
-
 Django框架比Flask要复杂得多。整个应用就是一个工程(project)，而子应用(application)模块则相当于内含的一个个包(package)：
 
 - 通过`django-admin startproject pizza`命令，生成一个骨架，包括pizza文件夹及内含的3个 .py文件，以及django命令行工具manage.py。
@@ -215,6 +211,8 @@ urlpatterns = [
 
 这样，accounts和orders两个子应用中的路由，都被安排到整个应用的根路由上。即：accounts里的'/'，就等价于整个应用的主页。这当然有隐患，好在应用架构不复杂。推荐的做法是把其中一个子应用映射到主路由，其他应用都丢进下一级。
 
+<!-- more -->
+
 admin.site.urls要映射进去，这样，后面才能通过"<domain name>/admin"去访问Django后台。
 
 #### 分应用配置
@@ -239,7 +237,9 @@ admin.site.urls要映射进去，这样，后面才能通过"<domain name>/admin
 
 [_base.html](https://github.com/madlogos/edx_cs50/blob/master/project3/templates/_base.html)和[_popup.html](https://github.com/madlogos/edx_cs50/blob/master/project3/templates/_popup.html)是框架模板，后续其他页面模板都会套用它。后者是前者的简化版。
 
-<!-- {% raw %} -->
+<!-- {% raw 
+
+%} -->
 - 要记得{% load static %}，载入静态文件。这样定义好之后，Django就知道上哪里动态地找到`href="{% static 'css/style.css' %}"`了。
 - "elem_cont"部分添加了通用的message代码。后端传到前端的message对象必须是一个长度为2的列表，其中message.0是"info"、"warning"、"success"、"danger"这几个Bootstrap认识的类别，message.1则是信息框的具体内容。事实上Django有自己的信息组件，这里没有用到。
 <!-- {% endraw %} -->
@@ -674,7 +674,6 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")

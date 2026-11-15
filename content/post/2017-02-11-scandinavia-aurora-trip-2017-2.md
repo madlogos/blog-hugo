@@ -28,8 +28,6 @@ outputs:
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0211/001ZzLsRzy78Gn46lM8ac.jpeg" width="100%" title="图: 隔河相望的城岛和隔壁的骑士岛(尖顶教堂是骑士岛教堂)" alt="" %}}
 
-<!--more-->
-
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0211/001ZzLsRzy78Gn8D7xA26.jpeg" width="100%" title="图: 站在Vasa桥眺望中央大桥(Centralbron)繁忙的早班交通" alt="" %}}
 
 半途路过圣灵岛(Helgeandsholm)，岛的西端就是瑞典国会。
@@ -74,6 +72,8 @@ outputs:
 {{% admonition tip 门票 %}}
 成人门票是40克朗。但是没有售票处，没有检票人，只有一个功德箱。给不给钱自己看着办吧。
 {{% /admonition %}}
+
+<!-- more -->
 
 ### 斯德哥尔摩王宫
 

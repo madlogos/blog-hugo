@@ -34,8 +34,6 @@ Flask最好的好处是可以多快好省地做网站，迅速实现一个原型
 
 事实很打脸。这个作业只是整个课程的五大作业里的一个，我拿出所有业余时间埋头苦干，做了足足两个礼拜。以这个效率去搬砖，你猜老板会用什么武功揍我？
 
-<!--more-->
-
 ## 作业要求
 
 [要求原文在此](https://docs.cs50.net/web/2019/x/projects/1/project1.html)：做个图书+书评查询网络应用。大致要求：
@@ -101,6 +99,8 @@ CREATE TABLE IF NOT EXISTS review (
 再把`books.csv`里的数据导进去。
 
 我是坚定的pandas粉，所以直接把csv读进pandas再一口气灌进sqlite里。面对postgresql我也这么干。传统的方法是用csv包一行一行扫描，再写入数据库。我是向量运算的刀山火海里捶打出来的，轻易才不用循环。
+
+<!-- more -->
 
 [import_local.py](https://github.com/madlogos/edx_cs50/blob/master/project1/import_local.py)部分代码如下。如果用heroku上的PostgreSQL，则用[import.py](https://github.com/madlogos/edx_cs50/blob/master/project1/import.py)。
 
@@ -271,7 +271,6 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 app = Flask(__name__, static_folder='static')
 
-
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
@@ -285,7 +284,6 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 sess = db()
-
 
 @app.teardown_request
 def remove_session(ex=None):
@@ -640,7 +638,6 @@ def index():
 {{ book[1] }}
 {% endblock %}
 
-
 {% block disp %}
 <table id="book_info" class="table table-responsive" width="80%">
     <caption><h4>Info of book <strong>{{ book[1] }}</strong></h4></caption>
@@ -886,7 +883,6 @@ main {
     bottom: 0;
     height: 100px;
 }
-
 
 @media (min-width: 1200px){
     .form-signin {

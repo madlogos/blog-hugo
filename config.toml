@@ -17,7 +17,7 @@ pygmentsCodefencesGuessSyntax = true
 hasCJKLanguage = true     # has chinese/japanese/korean ? # 自动检测是否包含 中文\日文\韩文
 pagination.pagerSize = 10             # 首页每页显示的文章数
 disqusShortname = "madlogos-gh"      # disqus_shortname
-googleAnalytics = "UA-68964085-2"      # UA-XXXXXXXX-X
+googleAnalytics = "G-XM932R825M"      # UA-XXXXXXXX-X
 copyright = "madlogos"     # default: author.name ↓        # 默认为下面配置的author.name ↓
 
 [author]                  # essential                     # 必需

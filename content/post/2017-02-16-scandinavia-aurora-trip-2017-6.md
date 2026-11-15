@@ -32,8 +32,6 @@ outputs:
 
 ​干脆把24小时票用到极致——去坐地铁玩。
 
-<!--more-->
-
 ### 地铁蓝线
 
 股票岛的地铁​是很有名的，以独特的艺术感著称。这种艺术感不像莫斯科地铁那样辉煌，而是走密林矿山野性神秘主义的路线。
@@ -81,6 +79,8 @@ Solna前一站Västra Skogen，走马赛克拼贴路线。
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0216/001ZzLsRzy78PTLJLvNd7.jpeg" width="100%" title="图: Västra Skogen站" alt="" %}}
 
 还有一站Rådhuset​，有一种矿坑风。
+
+<!-- more -->
 
 {{% figure class="center" src="https://gh-1251443721.cos.ap-chengdu.myqcloud.com/2017/0216/001ZzLsRzy78PVheBYU94.jpeg" width="100%" title="图: Rådhuset站" alt="" %}}
 
